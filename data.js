@@ -184,9 +184,9 @@ const MAPS={
 
 // ================= career data =================
 const LEAGUES=[
- {n:'Scrap League',sq:2,bud:2700,purse:450,repMul:1,tw:[1,.0,0,0],lv:0,rep:[5,45],teams:['Rustbucket Raiders','Junkyard Dogs','Bolt Brothers','Spare Parts Co.'],champ:'The Scrap King'},
- {n:'Steel Circuit',sq:3,bud:8000,purse:1200,repMul:1.3,tw:[.75,.25,0,0],lv:1,rep:[60,220],teams:['Chrome Syndicate','Voltage Vandals','Gearhead Gang','Piston Union'],champ:'Steel Tyrants'},
- {n:'Iron Majors',sq:3,bud:18000,purse:2400,repMul:1.6,tw:[.5,.38,.12,0],lv:2,rep:[200,480],teams:['Iron Legion','Thunder Works','Red Dynamo','Blackforge'],champ:'Ironclad Dynasty'},
+ {n:'Scrap League',sq:2,bud:4000,purse:650,repMul:1,tw:[.7,.3,0,0],lv:0,rep:[5,45],teams:['Rustbucket Raiders','Junkyard Dogs','Bolt Brothers','Spare Parts Co.'],champ:'The Scrap King'},
+ {n:'Steel Circuit',sq:3,bud:10500,purse:1350,repMul:1.3,tw:[.6,.35,.05,0],lv:1,rep:[60,220],teams:['Chrome Syndicate','Voltage Vandals','Gearhead Gang','Piston Union'],champ:'Steel Tyrants'},
+ {n:'Iron Majors',sq:3,bud:20500,purse:2500,repMul:1.6,tw:[.5,.38,.12,0],lv:2,rep:[200,480],teams:['Iron Legion','Thunder Works','Red Dynamo','Blackforge'],champ:'Ironclad Dynasty'},
  {n:'Titan Series',sq:4,bud:38000,purse:4500,repMul:2,tw:[.3,.42,.23,.05],lv:3,rep:[420,950],teams:['Titan Forge','Neon Reapers','Omega Labs','Atlas Heavy'],champ:'Colossus Corp'},
  {n:'Grand Championship',sq:4,bud:64000,purse:7500,repMul:2.5,tw:[.12,.4,.34,.14],lv:3,rep:[850,1700],teams:['Apex Robotics','Eclipse Engineering','Vanguard Prime','Obsidian Order'],champ:'The Undefeated'}
 ];

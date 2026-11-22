@@ -203,10 +203,47 @@ table.t{width:100%;border-collapse:collapse;font-size:12.5px}
 .modc.b{border-color:#5a4210;background:#211a0e}
 .modc .h{font-weight:700;font-size:14px}.modc .d{font-size:12px;color:var(--dim);margin-top:2px}
 .nem{color:#ff6a6a;font-size:11.5px}
+.szb{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font:700 11px 'JetBrains Mono',monospace;margin:0 2px;vertical-align:middle;border:1px solid}
+.szS{color:#6fd3a0;border-color:#6fd3a088;background:#6fd3a014}.szM{color:#ffb020;border-color:#ffb02088;background:#ffb02014}.szL{color:#ff7a5c;border-color:#ff7a5c88;background:#ff7a5c14}
+.ch{display:inline-flex;gap:4px;align-items:center;font:600 10.5px 'JetBrains Mono',monospace;padding:2px 6px;border-radius:5px;background:#0b0f14;border:1px solid var(--line);color:#c9d3df;margin:3px 4px 0 0;white-space:nowrap}
+.ch b{color:#6f7d8f;font-weight:500;font-size:9.5px;letter-spacing:.05em}
+.ty{display:inline-block;font:600 10px 'Chakra Petch';letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;border-radius:5px;border:1px solid;margin:3px 4px 0 0}
+.desc{display:block;font-size:11.5px;color:var(--dim);margin-top:2px}
+.chips2{line-height:1.2}
+.legend{font-size:12px;color:var(--dim);margin:-2px 0 8px}
+.opt-l{font-size:9.5px;color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:0 5px;letter-spacing:.08em;margin-left:4px}
+.advice{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.advice .role{padding:9px 11px;border-radius:9px;background:#141b24;border:1px solid var(--line)}
+.advice .role b{display:block;font-size:14px;letter-spacing:.04em}.advice .role span{font-size:12px;color:var(--dim)}
+.adv{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:7px 10px;border-radius:8px;line-height:1.35}
+.adv i{font-style:normal;flex:none;width:14px;text-align:center}
+.adv.bad{background:#2a1218;border:1px solid #5a2330;color:#ffb3bf}.adv.warn{background:#2a2110;border:1px solid #5a4210;color:#ffd890}.adv.tip{background:#101820;border:1px solid var(--line);color:#a9b8c9}.adv.good{background:#0f2621;border:1px solid #1f5a4e;color:var(--teal);font-weight:600}
+.btabs{position:sticky;top:58px;z-index:2;background:var(--bg);padding:6px 0;margin-bottom:8px}
+.btabs button{padding:9px 4px;font-size:11.5px}
+.dotn{display:inline-grid;place-items:center;min-width:16px;height:16px;border-radius:8px;background:var(--amber);color:#1a1205;font-size:10px;margin-left:3px}
+.recgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.recgrid div{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px;text-align:center}.recgrid b{display:block;font-size:16px}.recgrid span{font-size:10.5px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:520px){.recgrid{grid-template-columns:repeat(2,1fr)}}
+.steps{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.stepc{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;background:#1c1a12;border:1px solid #5a4210;font-size:13.5px}
+.stepc .si{font-size:18px;color:var(--amber)}
+.helpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.hbtn{display:flex;gap:8px;align-items:center;text-align:left;padding:10px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);font-size:13px;font-weight:600}
+.hbtn span{font-size:16px;width:20px;text-align:center}
+.help-d{border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:var(--panel2)}
+.help-d summary{padding:12px;font-weight:700;font-size:14.5px;cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center}
+.help-d summary::-webkit-details-marker{display:none}.help-d summary::after{content:"＋";margin-left:auto;color:var(--dim)}.help-d[open] summary::after{content:"－"}
+.help-d .hi{width:22px;text-align:center}
+.help-d .help{padding:0 14px 12px}.help-d .help p{margin:6px 0}.help-d .help ul{margin:6px 0 6px 18px}.help-d .help li{margin:3px 0}
+.tut{text-align:center;padding:6px 4px}.tut-ic{font-size:42px;margin:6px 0 8px}.tut h3{font-size:19px;margin-bottom:8px}.tut p{font-size:14.5px;line-height:1.55;color:#c9d3df;margin-bottom:14px}
+.dots{display:flex;gap:6px;justify-content:center;margin-bottom:14px}.dots i{width:7px;height:7px;border-radius:4px;background:var(--line)}.dots i.on{background:var(--amber);width:18px}
+#helpTop{font-weight:700;color:var(--amber)}
+.tabs button{min-width:0;padding:10px 4px}
+@media(max-width:420px){.tabs button{font-size:11px;letter-spacing:.04em}}
+@media(max-width:859px){#bPrev{aspect-ratio:16/9;max-height:220px}.stats{gap:6px 10px}}
 </style>
 </head>
 <body>
-<div id="topbar"><div class="team" id="tTeam"></div><button class="pill sndBtn" id="sndTop">🔊</button><span class="pill fm" id="tFame"></span><span class="pill cr" id="tCred"></span></div>
+<div id="topbar"><div class="team" id="tTeam"></div><button class="pill" id="helpTop" title="How to play">?</button><button class="pill sndBtn" id="sndTop">🔊</button><span class="pill fm" id="tFame"></span><span class="pill cr" id="tCred"></span></div>
 
 <div id="intro" class="screen"><div class="intro">
  <h1>BOT <span>ARENA</span></h1><div class="dim" style="margin-top:8px">Career Mode</div>
@@ -252,6 +289,7 @@ table.t{width:100%;border-collapse:collapse;font-size:12.5px}
 <script src="art.js"></script>
 <script src="sim.js"></script>
 <script src="render.js"></script>
+<script src="guide.js"></script>
 <script src="ui.js"></script>
 <script>if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>

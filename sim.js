@@ -46,7 +46,7 @@ function makeUnit(u,team,x,y){
 // ---------- pathing ----------
 function buildGrid(){const N=G.cols*G.rows;G.block=new Uint8Array(N);G.slagC=new Uint8Array(N);
  for(let j=0;j<G.rows;j++)for(let i=0;i<G.cols;i++){const cx=i*CELL+CELL/2,cy=j*CELL+CELL/2,k=j*G.cols+i;
-  for(const w of G.walls)if(cx>w.x-16&&cx<w.x+w.w+16&&cy>w.y-16&&cy<w.y+w.h+16){G.block[k]=1;break}
+  for(const w of G.walls)if(cx>w.x-19&&cx<w.x+w.w+19&&cy>w.y-19&&cy<w.y+w.h+19){G.block[k]=1;break}
   for(const l of G.slag)if(Math.hypot(cx-l.x,cy-l.y)<l.r+18)G.slagC[k]=1}G.fields={}}
 const cellOf=(x,y)=>clamp((y/CELL)|0,0,G.rows-1)*G.cols+clamp((x/CELL)|0,0,G.cols-1);
 const DIRS=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];
@@ -68,6 +68,22 @@ function segRect(x0,y0,dx,dy,r){let tmin=0,tmax=1;
  if(Math.abs(dy)<1e-9){if(y0<r.y||y0>r.y+r.h)return Infinity}else{let t1=(r.y-y0)/dy,t2=(r.y+r.h-y0)/dy;if(t1>t2)[t1,t2]=[t2,t1];tmin=Math.max(tmin,t1);tmax=Math.min(tmax,t2);if(tmin>tmax)return Infinity}return tmin}
 function segCircle(x0,y0,dx,dy,cx,cy,r){const fx=x0-cx,fy=y0-cy,a=dx*dx+dy*dy,b=2*(fx*dx+fy*dy),c=fx*fx+fy*fy-r*r;let D=b*b-4*a*c;if(D<0)return Infinity;D=Math.sqrt(D);const t1=(-b-D)/(2*a),t2=(-b+D)/(2*a);if(t1>=0&&t1<=1)return t1;if(t1<0&&t2>=0)return 0;return Infinity}
 function rayWall(x0,y0,dx,dy){let bt=Infinity,bw=null;for(const w of G.walls){const t=segRect(x0,y0,dx,dy,w);if(t<bt){bt=t;bw=w}}return [bt,bw]}
+// thick line test: is there room for a body of radius r to travel straight from a to (tx,ty)?
+function clearLine(a,tx,ty,r){const dx=tx-a.x,dy=ty-a.y,L=Math.hypot(dx,dy)||1,px=-dy/L*r*.85,py=dx/L*r*.85;
+ for(const [ox,oy] of [[0,0],[px,py],[-px,-py]])if(rayWall(a.x+ox,a.y+oy,dx,dy)[0]<=1)return false;return true}
+// fraction (0..1) of a probe of length L in direction (ux,uy) that is free of walls, arena edges and (optionally) slag
+function freeFrac(b,ux,uy,L,avoidSlag){let t=1;const px=-uy*b.r*.8,py=ux*b.r*.8;
+ for(const [ox,oy] of [[0,0],[px,py],[-px,-py]]){const x0=b.x+ox,y0=b.y+oy,dx=ux*L,dy=uy*L;const [tw]=rayWall(x0,y0,dx,dy);if(tw<t)t=tw;
+  if(dx>0)t=Math.min(t,(G.W-b.r*.6-x0)/dx);if(dx<0)t=Math.min(t,(b.r*.6-x0)/dx);if(dy>0)t=Math.min(t,(G.H-b.r*.6-y0)/dy);if(dy<0)t=Math.min(t,(b.r*.6-y0)/dy)}
+ if(avoidSlag)for(const l of G.slag){const tt=segCircle(b.x,b.y,ux*L,uy*L,l.x,l.y,l.r+b.r*.6);if(tt<t)t=tt}
+ return clamp(t,0,1)}
+const STEER_DIRS=Array.from({length:16},(_,i)=>[Math.cos(i/16*TAU),Math.sin(i/16*TAU)]);
+// context steering: choose the open direction that best matches the desired one
+function steer(b,mx,my){const ml=Math.hypot(mx,my);if(ml<.05)return [0,0];const ux=mx/ml,uy=my/ml,L=b.r+30+Math.min(60,b.speed*.35),slag=(b.o.haz||0)<.9;
+ let best=-1e9,bx=ux,by=uy;const pv=b.steerDir||[ux,uy];
+ for(const [dx,dy] of STEER_DIRS){const want=dx*ux+dy*uy;if(want<-.2)continue;const f=freeFrac(b,dx,dy,L,slag);const sc=want-(1-f)*1.8+.18*(dx*pv[0]+dy*pv[1]);if(sc>best){best=sc;bx=dx;by=dy}}
+ const fd=freeFrac(b,ux,uy,L,slag);if(fd>.98){bx=ux;by=uy}
+ b.steerDir=[bx,by];const m=Math.min(1,ml);return [bx*m,by*m]}
 function los(a,b){return rayWall(a.x,a.y,b.x-a.x,b.y-a.y)[0]>1}
 function wallAt(x,y,p=0){for(const w of G.walls)if(x>w.x-p&&x<w.x+w.w+p&&y>w.y-p&&y<w.y+w.h+p)return w;return null}
 function pushOut(b,R){const cx=clamp(b.x,R.x,R.x+R.w),cy=clamp(b.y,R.y,R.y+R.h);let dx=b.x-cx,dy=b.y-cy,d2=dx*dx+dy*dy;if(d2>=b.r*b.r)return false;let nx,ny,p;
@@ -163,7 +179,7 @@ function bake(p){const c=G.decals.getContext('2d');c.setTransform(FS,0,0,FS,0,0)
 function mountPos(b,w){const c=Math.cos(b.angle),s=Math.sin(b.angle);return [b.x+w.vis.mx*c-w.vis.my*s,b.y+w.vis.mx*s+w.vis.my*c]}
 function muzzleOf(b,w){const [mx,my]=mountPos(b,w),L=w.W.len;return [mx+Math.cos(w.aim)*L,my+Math.sin(w.aim)*L]}
 function fireWeapon(b,w,t){
- const W=w.W,[mx,my]=muzzleOf(b,w),a0=w.aim;w.recoil=W.sz*1.5;if(WSND[w.k]&&W.kind!=='missile')sfx(WSND[w.k],mx,my,W.sz===1?.6:1);
+ const W=w.W,[mx,my]=muzzleOf(b,w),a0=w.aim;b.lastShot=G.t;w.recoil=W.sz*1.5;if(WSND[w.k]&&W.kind!=='missile')sfx(WSND[w.k],mx,my,W.sz===1?.6:1);
  if(W.kind==='proj'||W.kind==='flame'){const n=W.pellets||1;
   for(let i=0;i<n;i++){const a=a0+rnd(-w.spr/2,w.spr/2),sp=W.spd*(W.kind==='flame'?rnd(.8,1.2):n>1?rnd(.85,1.1):1);
    G.proj.push({x:mx,y:my,px:mx,py:my,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,team:b.team,src:b,w,life:w.rng/W.spd*(W.kind==='flame'?1:1.15),k:w.k,ty:W.ty,r:W.kind==='flame'?3:W.splash?4:2,age:0,dmg:w.dmg})}
@@ -188,7 +204,7 @@ function fireWeapon(b,w,t){
   G.bolts.push({pts,life:.18,ml:.18});pts.slice(1).forEach(([x,y])=>{spark(x,y,6,'#bfe0ff',180);flashL(x,y,60,'#8fc8ff',.1)})}
 }
 const k3=W=>W.sz===3;
-function meleeHit(b,w,t){const W=w.W;sfx(w.k==='saw'?'saw':'clank',t.x,t.y,W.sz===3?1.4:1);const d=damage(t,w.dmg,b,'kinetic',w);const a=Math.atan2(t.y-b.y,t.x-b.x);knock(t,Math.cos(a),Math.sin(a),W.knock||70);if(W.stunT)stunT(t,W.stunT);
+function meleeHit(b,w,t){const W=w.W;b.lastShot=G.t;sfx(w.k==='saw'?'saw':'clank',t.x,t.y,W.sz===3?1.4:1);const d=damage(t,w.dmg,b,'kinetic',w);const a=Math.atan2(t.y-b.y,t.x-b.x);knock(t,Math.cos(a),Math.sin(a),W.knock||70);if(W.stunT)stunT(t,W.stunT);
  if(t.o.util.spikes&&!b.dead)damage(b,w.dmg*t.o.util.spikes.val,t,'kinetic');
  const hx=(b.x+t.x)/2,hy=(b.y+t.y)/2;spark(hx,hy,W.sz*5,'#ffe9a8',260);mark(t,hx,hy,3);if(W.sz===3){G.shake=Math.max(G.shake,7);flashL(hx,hy,60,'#ffd890',.08)}w.recoil=-4}
 // ---------- step ----------
@@ -277,18 +293,29 @@ function updateBot(b,dt){
  else if(anchor&&dist(b,anchor)>150){goal=anchor;b.mode='Regrouping with '+anchor.name}
  else if(beh==='sentinel'&&(!t||!haveLos||d>o.range*1.05)&&b.idle<2.5){b.idle+=dt;if(dist(b,b.home)>30)goal=b.home;b.mode='Holding position'}
  if(t&&haveLos&&d<o.range)b.idle=0;
- if(goal){if(los(b,goal)){const a=Math.atan2(goal.y-b.y,goal.x-b.x);mx=Math.cos(a);my=Math.sin(a)}else[mx,my]=pathDir(b,goal.x,goal.y,'g'+(goal.id||Math.round(goal.x)+'_'+Math.round(goal.y)))}
+ // stuck watchdog: if we have barely moved for a second while trying to, path-find for a while
+ b.wdT=(b.wdT||0)+dt;if(b.wdT>1){if(b._want&&Math.hypot(b.x-(b.wdX??b.x),b.y-(b.wdY??b.y))<b.speed*.18){b.unstick=1.6;b.orbit*=-1}b.wdT=0;b.wdX=b.x;b.wdY=b.y}
+ if(b.unstick>0)b.unstick-=dt;
+ // nothing fired for a while although we have a target: push in closer
+ const restless=t&&G.t-(b.lastShot??-9)>4&&G.t>3&&beh!=='sentinel';
+ const pathTo=(x,y,key)=>pathDir(b,x,y,key);
+ if(goal){const gk='g'+(goal.id||Math.round(goal.x)+'_'+Math.round(goal.y));if(b.unstick<=0&&clearLine(b,goal.x,goal.y,b.r)){const a=Math.atan2(goal.y-b.y,goal.x-b.x);mx=Math.cos(a);my=Math.sin(a)}else[mx,my]=pathTo(goal.x,goal.y,gk)}
  else if(t){
-  if(haveLos){const ux=(t.x-b.x)/(d||1),uy=(t.y-b.y)/(d||1);let f=0;
-   if(retreating){f=-1;b.mode='Retreating!'}else{if(d>pref+15)f=1;else if(d<pref-15)f=beh==='kite'||beh==='sniper'?-1:beh==='aggro'||beh==='berserk'?-.1:-.6;b.mode=f>0?'Closing on '+t.name:f<0?'Backing off from '+t.name:'Engaging '+t.name}
+  const canDirect=haveLos&&b.unstick<=0&&!(restless&&!clearLine(b,t.x,t.y,b.r));
+  if(canDirect){const ux=(t.x-b.x)/(d||1),uy=(t.y-b.y)/(d||1);let f=0;const p2=restless?Math.min(pref,d*.6):pref;
+   if(retreating){f=-1;b.mode='Retreating!'}else{if(d>p2+15)f=1;else if(d<p2-15)f=beh==='kite'||beh==='sniper'?-1:beh==='aggro'||beh==='berserk'?-.1:-.6;b.mode=restless?'Pressing in on '+t.name:f>0?'Closing on '+t.name:f<0?'Backing off from '+t.name:'Engaging '+t.name}
    const tang=beh==='flank'?.95:beh==='sniper'||beh==='berserk'?0:beh==='kite'||beh==='skirm'?.45:o.range&&pref>0?.28:0;
-   mx=ux*f+(-uy)*tang*b.orbit;my=uy*f+ux*tang*b.orbit}
-  else{[mx,my]=pathDir(b,t.x,t.y,'t'+t.id);b.mode='Hunting '+t.name}
+   if(f>0&&!clearLine(b,t.x,t.y,b.r)){[mx,my]=pathTo(t.x,t.y,'t'+t.id);mx*=f;my*=f}else{mx=ux*f;my=uy*f}
+   // strafe only if there is room on that side, otherwise flip
+   if(tang){let sx=-uy*b.orbit,sy=ux*b.orbit;if(freeFrac(b,sx,sy,b.r+40,true)<.6){b.orbit*=-1;sx=-sx;sy=-sy}mx+=sx*tang;my+=sy*tang}
+   // backing into a wall? slide sideways instead
+   if(f<0&&freeFrac(b,-ux,-uy,b.r+40,true)<.5){mx=-uy*b.orbit*.9+ux*.1;my=ux*b.orbit*.9+uy*.1}}
+  else{[mx,my]=pathTo(t.x,t.y,'t'+t.id);b.mode=b.unstick>0?'Finding a way around':'Hunting '+t.name}
  }else b.mode='Searching';
  for(const a of alliesOf(b)){const dx=b.x-a.x,dy=b.y-a.y,dd=Math.hypot(dx,dy);const R=b.r+a.r+26;if(dd<R&&dd>0){const k=(R-dd)/R;mx+=dx/dd*k*1.2;my+=dy/dd*k*1.2}}
- if((o.haz||0)<1)for(const l of G.slag){const dx=b.x-l.x,dy=b.y-l.y,dd=Math.hypot(dx,dy);if(dd<l.r+b.r+30){const k=(l.r+b.r+30-dd)/30*(1-(o.haz||0)*.7);mx+=dx/(dd||1)*k*1.5;my+=dy/(dd||1)*k*1.5}}
+ if((o.haz||0)<1)for(const l of G.slag){const dx=b.x-l.x,dy=b.y-l.y,dd=Math.hypot(dx,dy);if(dd<l.r+b.r*.5){mx+=dx/(dd||1)*1.5;my+=dy/(dd||1)*1.5}}
  if(G.stormR<1e5){const dx=G.W/2-b.x,dy=G.H/2-b.y,dd=Math.hypot(dx,dy);if(dd>G.stormR-60){const k=clamp((dd-(G.stormR-60))/60,0,2);mx+=dx/dd*k*1.4;my+=dy/dd*k*1.4}}
- const ml=Math.hypot(mx,my);if(ml>1){mx/=ml;my/=ml}
+ [mx,my]=steer(b,mx,my);const ml=Math.hypot(mx,my);b._want=ml>.3;
  // active modules
  for(const k in b.mod){b.mod[k]-=dt;if(b.mod[k]>0)continue;
   if(k==='booster'){let dir=null;if(t&&(beh==='aggro'||beh==='berserk'||beh==='flank'||o.melee)&&d>pref+80&&haveLos)dir=Math.atan2(t.y-b.y,t.x-b.x);else if(t&&enemiesOf(b).some(e=>dist(e,b)<110)&&(beh!=='berserk'))dir=Math.atan2(b.y-t.y,b.x-t.x)+rnd(-.6,.6);else if(retreating&&t)dir=Math.atan2(b.y-t.y,b.x-t.x);
@@ -305,7 +332,7 @@ function updateBot(b,dt){
  let face=null;if(o.omni){if(t)face=Math.atan2(t.y-b.y,t.x-b.x)}else if(sp>14)face=Math.atan2(b.vy,b.vx);
  if(face!=null){b.angle+=clamp(angDiff(b.angle,face),-o.turn*dt,o.turn*dt)}
  if(o.hover&&Math.random()<.25)smoke(b.x+rnd(-b.r,b.r),b.y+rnd(-b.r,b.r),3,.4,.3);
- if(ml>.3&&Math.hypot(b.x-px,b.y-py)<b.speed*dt*.25){b.stuckT+=dt;if(b.stuckT>.6){b.orbit*=-1;b.stuckT=0}}else b.stuckT=0;
+
  // weapons
  const rate=o.rate*(o.burst&&G.t<8?1.5:1)*(b.pk.has('firststrike')&&G.t<6?1.4:1)*(G.mods.has('overdrive')?1.35:1);
  for(const w of b.weps){const W=w.W;const [wx,wy]=mountPos(b,w);
