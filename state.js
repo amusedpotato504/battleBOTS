@@ -56,7 +56,7 @@ function compute(b,inv=S.inv){
  if(!f){o.ok=false;o.warn.push('Needs a frame');o.r=15;o.hp=0;o.speed=0;o.dps=0;o.range=0;o.load=1;o.pow=0;o.armor=0;o.arPct=0;return o}
  const F=FRAMES[f.k];o.F=F;o.fk=f.k;o.r=F.r;
  let hpMul=1+(A(f).hp||0),armor=F.armor+(A(f).armor||0),load=F.load*(1+(A(f).load||0)),spdMul=F.spd*(1+(A(f).speed||0)),hp=F.hp*TIERS[f.t].mul;
- if(dr){const D=DRIVES[dr.k];o.dk=dr.k;load+=D.load*(1+(A(dr).load||0));o.base=D.speed*(1+(TIERS[dr.t].mul-1)*.5)*(1+(A(dr).speed||0));o.acc=D.acc*(1+(A(dr).accel||0));o.turn=F.turn*D.turn;o.knock=D.knock;o.haz=D.haz;o.omni=!!D.omni;o.hover=dr.k==='hover'}
+ if(dr){const D=DRIVES[dr.k];o.dk=dr.k;load+=D.load*(1+(A(dr).load||0));o.base=D.speed*(1+(TIERS[dr.t].mul-1)*.5)*(1+(A(dr).speed||0));o.acc=D.acc*(1+(A(dr).accel||0));o.turn=F.turn*D.turn;o.knock=D.knock;o.haz=D.haz;o.omni=!!D.omni;o.hover=dr.k==='hover'||dr.k==='maglev'}
  else{o.ok=false;o.warn.push('Needs a drive');o.base=0;o.acc=5;o.turn=F.turn;o.knock=0;o.haz=0}
  if(co){const C=CORES[co.k];o.pow=C.pow*TIERS[co.t].mul*(1+(A(co).pow||0));o.weight+=C.w*(1-(A(co).light||0));o.boom=A(co).stable?0:C.boom;o.burst=!!C.burst;o.ck=co.k}
  else{o.ok=false;o.warn.push('Needs a power core');o.pow=0}
@@ -70,13 +70,14 @@ function compute(b,inv=S.inv){
  if(U.cooling)o.res.thermal+=.5;
  b.weps.forEach((id,i)=>{const p=g(id);if(!p)return;const W=WEAPONS[p.k],af=A(p),m=TIERS[p.t].mul;
   o.weight+=W.w*(1-(af.light||0));o.draw+=W.p*(1-(af.eff||0));
-  const tg=U.targeting?U.targeting.val:0;
-  o.weps.push({slot:i,k:p.k,W,t:p.t,dmg:W.dmg*m*(1+(af.dmg||0)),cd:W.cd/(1+(af.rate||0)),rng:(W.rng||0)*(1+(af.range||0)+tg),
-   spr:(W.spr||0)*(1-(af.acc||0))*(U.targeting?.6:1)*(U.gyro?.8:1),pierce:(W.pierce||0)+(af.pierce||0),burn:af.burn||0,shock:af.shock||0,leech:af.leech||0})});
+  const tg=(U.targeting?U.targeting.val:0)+(U.sensor?U.sensor.val:0),feed=1+(U.ammofeed?U.ammofeed.val:0);
+  o.weps.push({slot:i,k:p.k,W,t:p.t,dmg:W.dmg*m*(1+(af.dmg||0))*feed,cd:W.cd/(1+(af.rate||0)),rng:(W.rng||0)*(1+(af.range||0)+tg),
+   spr:(W.spr||0)*(1-(af.acc||0))*(U.targeting?.6:1)*(U.gyro?.8:1),pierce:(W.pierce||0)+(af.pierce||0),burn:af.burn||0,shock:(W.shock||0)+(af.shock||0),leech:af.leech||0})});
  if(chip){const C=CHIPS[chip.k],af=A(chip);o.react=C.react*(1-(af.react||0));o.aim=C.aim*TIERS[chip.t].mul*(1+(af.cal||0));o.lead=C.lead;o.dodge=!!C.dodge}
  else{o.ok=false;o.warn.push('Needs an AI chip');o.react=1;o.aim=1;o.lead=.5}
  o.load=load;o.hp=hp*hpMul*2.2;o.armor=armor;o.arPct=Math.min(.6,armor*.05);
  o.wr=o.weight/load;
+ if(U.servos){spdMul*=1+U.servos.val;o.turn*=1.15}
  let sp=o.base*spdMul*(1-.12*Math.min(1,o.wr));if(o.wr>1)sp*=Math.max(0,1-(o.wr-1)*2);o.speed=sp;
  if(o.wr>1.4){o.ok=false;o.warn.push('Too heavy to move (over 140% load)')}else if(o.wr>1)o.warn.push('Overloaded: speed penalty');
  o.powMul=o.draw>o.pow&&o.pow>0?o.pow/o.draw:1;if(o.pow>0&&o.draw>o.pow)o.warn.push(`Underpowered: weapons cycle at ${Math.round(o.powMul*100)}%`);
@@ -149,7 +150,7 @@ function pickBeh(o){
 function refreshMarket(){
  const li=S.unlocked,L=LEAGUES[Math.min(li+1,4)];S.market=[];
  const cats=['frame','drive','core','armor','weapon','weapon','weapon','util','util','chip'];
- for(let i=0;i<8;i++){const c=pick(cats),obj=CATS[c];const ks=Object.keys(obj).filter(k=>obj[k].lv<=Math.min(3,li+1)&&obj[k].cost>0);
+ for(let i=0;i<6;i++){const c=pick(cats),obj=CATS[c];const ks=Object.keys(obj).filter(k=>obj[k].lv<=Math.min(3,li+1)&&obj[k].cost>0);
   const t=2+wpick(Math.random,[.55,.32,.13]);const p=newPart(c,pick(ks),t);S.market.push(p)}
 }
 function catalogFor(c){const obj=CATS[c];return Object.keys(obj).filter(k=>obj[k].lv<=S.unlocked)}

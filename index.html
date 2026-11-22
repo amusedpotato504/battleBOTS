@@ -338,14 +338,65 @@ input[type=range]{accent-color:var(--amber)}
 .kv div{border:1px solid var(--line)}
 .slot.empty{text-align:left;padding:10px;font-size:inherit;color:inherit;border:1px solid var(--line);border-left:3px solid var(--amber)}
 @media(max-width:600px){.prow>:last-child:not(.grow):not(canvas):not(.pr){margin-left:auto;margin-top:8px}}
+
+/* ===== v6: clean layout ===== */
+#topbar{gap:8px}
+#menuBtn{font-size:16px;padding:4px 11px;line-height:1.2}
+.amber{color:var(--amber)}
+.eyebrow{font:600 11px 'Chakra Petch',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.btn.big{width:100%;margin-top:16px;padding:15px;font-size:15px}
+.link{display:block;margin:12px auto 0;color:var(--dim);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.hint{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:11px 12px;margin-bottom:12px;background:#16130b;border:1px solid #4a3a12;border-left:3px solid var(--amber);font-size:13.5px}
+.hint .si{color:var(--amber);font-size:17px}
+.hero{padding:20px 18px;text-align:center;max-width:520px;margin:6vh auto 0}
+.hero h2{font-size:26px;margin:4px 0 14px}
+.prog{display:flex;gap:4px;margin:0 auto 10px;max-width:300px}
+.prog i{flex:1;height:6px;background:var(--line)}
+.prog i.done{background:var(--teal)}.prog i.cur{background:var(--amber)}.prog i.fin{flex:1.6}
+.vs{margin:14px 0 4px;font-size:20px;display:flex;gap:8px;align-items:baseline;justify-content:center;flex-wrap:wrap}
+.vs b{font:700 22px 'Chakra Petch',sans-serif;letter-spacing:.04em}
+.bot .ln{margin-top:3px}
+.bot>.dim{align-self:center;font-size:18px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:10px}
+.tiles div{background:var(--panel);border:1px solid var(--line);padding:8px 4px;text-align:center}
+.tiles b{display:block;font:600 16px 'JetBrains Mono',monospace}
+.tiles span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.brief{display:block;font-size:12px;color:#aab6c4;margin-top:2px}
+.brief .szb{margin:0 4px 0 0;width:16px;height:16px;font-size:10px}
+.pd{font-size:12.5px;color:#c9d2dc;line-height:1.35;margin-top:2px}
+.slot .lbl .szb{margin:0 4px 0 0;width:15px;height:15px;font-size:9.5px}
+.prow.tap{cursor:pointer}.prow.tap:hover{border-color:var(--line2)}
+.prow.cant .btn{opacity:.55}
+.sheet-h h3{margin-top:1px}
+.conds{display:flex;flex-direction:column;gap:5px}
+.cond{display:flex;flex-direction:column;padding:8px 11px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid #5b6b80}
+.cond b{font:700 13.5px 'Chakra Petch',sans-serif;letter-spacing:.04em}.cond span{font-size:12px;color:var(--dim)}
+.cond.mod{border-left-color:#b07cff}.cond.bty{border-left-color:var(--amber)}
+.foes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.foe{display:flex;gap:10px;align-items:center;padding:8px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #ff5a72}
+.foe canvas{width:52px;height:52px;flex:none;background:radial-gradient(circle,#232a33,#0c0f13);border:1px solid var(--line)}
+.pick canvas{width:52px;height:52px}
+.menu{display:flex;flex-direction:column;gap:6px}
+.menu button{display:flex;gap:12px;align-items:center;padding:13px 12px;background:var(--panel2);border:1px solid var(--line);font-size:14.5px;font-weight:600;text-align:left}
+.menu button span{width:22px;text-align:center;font-size:16px;color:var(--amber)}
+.menu button.danger{color:#ff6b80}.menu button.danger span{color:#ff6b80}
+.acts{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.bigicon{width:72px;height:72px;flex:none;border:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1d242e;border:1px solid #3a4656;padding:9px 14px;z-index:60;font-size:13px;max-width:90vw}
+textarea.code{width:100%;height:120px;background:#0b0f14;color:var(--text);border:1px solid var(--line);padding:8px;font:11px 'JetBrains Mono',monospace;word-break:break-all}
+.inspect{min-width:170px}.inspect .ih{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.inspect .ih span{font-size:11px;letter-spacing:.08em;text-transform:uppercase}.inspect .bar{margin:5px 0 4px}
+.ctrls button{min-width:44px}
+@media(max-width:520px){.hero{margin-top:2vh}.tiles b{font-size:14px}}
+@media(max-width:600px){.prow{flex-wrap:nowrap}.prow>.grow{flex:1 1 auto}.prow .pr{flex:none;display:block;margin-top:0;align-self:center}}
 </style>
 </head>
 <body>
-<div id="topbar"><div class="team" id="tTeam"></div><button class="pill" id="helpTop" title="How to play">?</button><button class="pill sndBtn" id="sndTop">🔊</button><span class="pill fm" id="tFame"></span><span class="pill cr" id="tCred"></span></div>
+<div id="topbar"><div class="team" id="tTeam"></div><span class="pill cr" id="tCred"></span><button class="pill" id="menuBtn" title="Menu">☰</button></div>
 
 <div id="intro" class="screen"><div class="intro">
  <h1>BOT <span>ARENA</span></h1><div class="dim" style="margin-top:8px">Career Mode</div>
- <p class="help" style="margin-top:18px">Build combat robots from hundreds of parts, fight your way up through five leagues, and turn your bots into legends. Every bot earns its own <b>reputation</b>, and so does every rival.</p>
+ <p class="help" style="margin-top:18px">Build combat robots, send them into the arena and climb five leagues to the Grand Championship.</p>
  <input id="teamName" maxlength="22" placeholder="Name your team" value="Garage Rats">
  <button class="btn primary" style="width:100%" id="startCareer">Start career</button>
  <button class="btn small ghost" style="width:100%;margin-top:10px" id="introImp">Import a save code</button>
@@ -368,7 +419,7 @@ input[type=range]{accent-color:var(--amber)}
  <div class="banner" id="banner"></div>
  <div id="announce"></div>
  <div id="killcam">KILL CAM</div>
- <div class="ctrls"><button id="pauseBtn">❚❚</button><button data-sp="1" class="on">1×</button><button data-sp="2">2×</button><button data-sp="4">4×</button><button id="camBtn" class="on" title="Auto camera">◎</button><button class="sndBtn" id="sndBat">🔊</button><button id="quitBtn">✕</button></div>
+ <div class="ctrls"><button id="pauseBtn" title="Pause">❚❚</button><button id="spdBtn" title="Speed">1×</button><button id="quitBtn" title="Forfeit">✕</button></div>
 </div>
 
 <div id="builder"></div>
