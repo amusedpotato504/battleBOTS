@@ -1,0 +1,2 @@
+Write-access test file created by Claude Code on 2026-11-22.
+Safe to delete.
