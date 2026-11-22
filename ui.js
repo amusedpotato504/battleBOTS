@@ -21,7 +21,9 @@ function renderCareer(){
  const L=LEAGUES[S.league],opp=opponentFor(S.league,S.ladder),rv=S.rivals[opp],avg=Math.round(rv.bots.reduce((a,b)=>a+b.rep,0)/rv.bots.length);
  const ready=S.bots.filter(b=>compute(b).ok).length;
  const purse=Math.round(L.purse*(1+.15*S.ladder)*(S.ladder>=4?1.6:1)*(1+(S.league===4?.15*S.crowned:0)));
+ const steps=nextSteps();
  $('#careerBody').innerHTML=`
+ ${steps.length?`<div class="steps">${steps.map(([i,t,btn,tab])=>`<div class="stepc"><span class="si">${i}</span><span class="grow">${t}</span><button class="btn small" data-go="${tab}">${btn}</button></div>`).join('')}</div>`:''}
  <div class="card"><div class="league"><div class="crest">${['⚙','⛓','⚒','♜','♛'][S.league]}</div><div class="grow"><div class="dim small" style="letter-spacing:.14em">LEAGUE ${S.league+1} OF 5${S.crowned?' · DEFENDING CROWN':''}</div><h2>${L.n}</h2><div class="dim small">${L.sq} bots per side · Win purse up to ¢${fmt(purse)}</div></div></div>
  <div class="ladder">${[0,1,2,3,4].map(i=>`<div class="${i<S.ladder?'done':i===S.ladder?'cur':''} ${i===4?'champ':''}">${i===4?'♛ FINAL':'Match '+(i+1)}<br><span style="font-size:9.5px">${esc(opponentFor(S.league,i))}</span></div>`).join('')}</div></div>
  <div class="sect">Next match</div>
@@ -33,11 +35,12 @@ function renderCareer(){
  ${S.trophies.length?`<div class="trophies">${S.trophies.map(t=>`<div class="trophy">🏆 ${esc(t.n)}</div>`).join('')}</div>`:'<div class="empty">No trophies yet. Win a league final to claim one.</div>'}
  <div class="sect">Recent results</div>
  ${S.log.length?`<div class="card log">${S.log.slice(0,8).map(l=>`<div><span class="${l.win?'up':'down'}" style="width:16px">${l.win?'W':'L'}</span><span class="grow">vs ${esc(l.vs)} <span class="dim">· ${esc(l.lg)}</span></span><span class="mono ${l.net>=0?'up':'down'}">${l.net>=0?'+':''}${fmt(l.net)}¢</span></div>`).join('')}</div>`:'<div class="empty">No matches played yet.</div>'}
- <div class="sect">How it works</div>
- <div class="help">Earn credits, buy parts, and assemble bots in the <b>Garage</b>. Each frame has hardpoints (S/M/L) and utility bays. Keep total <b>weight</b> under the load limit and power <b>draw</b> under your core's output. Higher-tier parts (Mk II–IV) roll random <b>affixes</b>. Win the 4 league matches and the final to unlock the next league. Repairs come out of your winnings. Bots and rivals earn <b>reputation</b> from wins, kills (more for famous victims), damage and MVP awards.</div>
+ <div class="sect">Guide</div>
+ <div class="helpgrid">${HELP.map(([i,t],k)=>`<button class="hbtn" data-help="${k}"><span>${i}</span>${t}</button>`).join('')}</div>
  <div class="sect">Save backup</div>
  <div class="row" style="flex-wrap:wrap"><button class="btn small" id="expBtn">Export save code</button><button class="btn small" id="impBtn">Import save code</button><span class="small dim grow">Move your career between devices or app versions.</span></div>
  <div style="margin-top:16px"><button class="btn small danger" id="resetBtn">Abandon career</button></div>`;
+ $$('#careerBody [data-go]').forEach(b=>b.onclick=()=>{if(b.dataset.go==='shop'){SHOPTAB=b.textContent==='Storage'?'storage':'market'}show(b.dataset.go)});$$('#careerBody [data-help]').forEach(b=>b.onclick=()=>openHelp(+b.dataset.help));
  $('#expBtn').onclick=exportSave;$('#impBtn').onclick=importSave;
  $('#prepBtn').onclick=()=>prepMatch(false);$('#exhBtn').onclick=()=>prepMatch(true);
  $('#resetBtn').onclick=()=>confirmBox('Abandon career?','Deletes your team, bots, parts and records. This cannot be undone.','Delete everything',()=>{try{localStorage.removeItem(SAVE_KEY)}catch(e){}S=null;showIntro()});
@@ -132,7 +135,7 @@ function renderGarage(){
  $('#garageBody').innerHTML=`<div class="row"><h2 class="grow">Garage</h2><span class="dim small">${S.bots.length}/8 bots</span></div>
  <div class="row" style="margin-top:10px"><button class="btn small" id="testBtn">⌖ Test range</button><span class="small dim grow">Free practice. No rewards, no repairs.</span></div><div class="sect">Your bots</div><div class="bots">${S.bots.map(b=>{const o=compute(b),ep=epithet(b);return `<button class="card bot" data-id="${b.id}"><canvas data-b="${b.id}"></canvas><div class="grow">
   <div class="nm">${esc(b.name)}</div>${ep?`<div class="ep">${esc(ep)}</div>`:''}<div>${rankHtml(b.rep)} <span class="mono small dim">rep ${b.rep}</span></div>
-  ${perkPts(b)>0?`<div class="small" style="color:var(--amber)">● ${perkPts(b)} perk point${perkPts(b)>1?'s':''} to spend</div>`:''}${S.nemesis[b.id]?`<div class="nem">☠ ${esc(S.nemesis[b.id].name)}</div>`:''}<div class="ln">${b.st.w}W-${b.st.m-b.st.w}L · ${b.st.k} KOs · ¢${fmt(o.value)}</div>${o.ok?`<div class="ln">${Math.round(o.hp)} HP · ${Math.round(o.dps)} DPS · ${Math.round(o.speed)} SPD</div>`:`<div class="warnline">${esc(o.warn[0])}</div>`}</div></button>`}).join('')}
+  ${perkPts(b)>0?`<div class="small" style="color:var(--amber)">● ${perkPts(b)} perk point${perkPts(b)>1?'s':''} to spend</div>`:''}${S.nemesis[b.id]?`<div class="nem">☠ ${esc(S.nemesis[b.id].name)}</div>`:''}${(()=>{const r=buildAdvice(b,o).role;return r?`<div class="small" style="color:#9db8d8">${r[0]}</div>`:""})()}<div class="ln">${b.st.w}W-${b.st.m-b.st.w}L · ${b.st.k} KOs · ¢${fmt(o.value)}</div>${o.ok?`<div class="ln">${Math.round(o.hp)} HP · ${Math.round(o.dps)} DPS · ${Math.round(o.speed)} SPD</div>`:`<div class="warnline">${esc(o.warn[0])}</div>`}</div></button>`}).join('')}
  ${S.bots.length<8?'<button class="card bot add" id="newBot">+ BUILD NEW BOT</button>':''}</div>
  <div class="sect">Spare parts</div><div class="dim small">${Object.values(S.inv).filter(p=>!p.on).length} parts in storage. Buy and sell in the Parts tab.</div>`;
  $('#testBtn').onclick=openTestRange;
@@ -146,72 +149,68 @@ let BB=null,bAnim=0;
 function openBuilder(id){BB=S.bots.find(b=>b.id===id);$('#builder').classList.add('on');renderBuilder();const g=++bAnim;let t0=performance.now();
  const tick=now=>{if(g!==bAnim||!$('#builder').classList.contains('on'))return;const t=(now-t0)/1000,c=$('#bPrev');if(c&&BB&&BB.frame){previewBot(c,BB,S.inv,{angle:-Math.PI/2+Math.sin(t*.35)*.5,aim:-Math.PI/2+Math.sin(t*.9)*.7,ph:t*2,t,zoom:1.6,floor:1})}requestAnimationFrame(tick)};requestAnimationFrame(tick)}
 function closeBuilder(){$('#builder').classList.remove('on');bAnim++;BB=null;persist();renderGarage();refreshTop()}
-function slotRow(label,id,key,idx,extra=''){const p=id&&S.inv[id];return `<button class="slot ${p?'':'empty'}" data-k="${key}" data-i="${idx??''}"><canvas data-p="${p?p.id:''}"></canvas><div class="grow"><div class="lbl">${label} ${extra}</div><div class="pn" style="${p&&p.t>1?'color:'+TIERS[p.t].col:''}">${p?esc(partName(p)):'Empty'}</div>${p&&Object.keys(p.af).length?`<div class="af">${affixText(p).join(' · ')}</div>`:''}${p?`<div class="small dim">${partLine(p)}</div>`:''}</div><span class="dim">›</span></button>`}
+let BTAB='loadout';
+function slotRow(label,id,key,idx,extra='',hint=''){const p=id&&S.inv[id];return `<button class="slot ${p?'':'empty'}" data-k="${key}" data-i="${idx??''}"><canvas data-p="${p?p.id:''}"></canvas><div class="grow"><div class="lbl">${label} ${extra}</div><div class="pn" style="${p&&p.t>1?'color:'+TIERS[p.t].col:''}">${p?esc(partName(p)):'Empty · tap to add'}</div>${p&&Object.keys(p.af).length?`<div class="af">${affixText(p).join(' · ')}</div>`:''}${p?`<div class="chips2">${partLine(p)}</div>`:hint?`<div class="small dim">${hint}</div>`:''}</div><span class="dim">›</span></button>`}
 function renderBuilder(){
  const b=BB,o=compute(b),F=o.F,ep=epithet(b),y=$('#builder').scrollTop;
- const st=(lbl,v,max,disp)=>`<div class="stat"><div class="k"><span>${lbl}</span><b>${disp??Math.round(v)}</b></div><div class="bar"><i style="width:${Math.min(100,v/max*100)}%"></i></div></div>`;
- const meter=(lbl,a,bv,inv)=>{const r=bv?a/bv:0;return `<div class="meter"><div class="k"><span>${lbl}</span><b>${Math.round(a)} / ${Math.round(bv)}</b></div><div class="bar ${r>1.4?'over':r>1?'over':r>.9?'warn':''}"><i style="width:${Math.min(100,r*100)}%"></i></div></div>`};
- const res=o.res||{};
- $('#builder').innerHTML=`<div class="bhead"><button class="btn small" id="bBack">‹ Done</button><input id="bName" maxlength="16" value="${esc(b.name)}"></div>
+ const st=(lbl,v,max,disp,tip)=>`<div class="stat" title="${tip||''}"><div class="k"><span>${lbl}</span><b>${disp??Math.round(v)}</b></div><div class="bar"><i style="width:${Math.min(100,v/max*100)}%"></i></div></div>`;
+ const meter=(lbl,a,bv,help)=>{const r=bv?a/bv:0;return `<div class="meter"><div class="k"><span>${lbl} <span class="dim">· ${help}</span></span><b>${Math.round(a)} / ${Math.round(bv)}</b></div><div class="bar ${r>1?'over':r>.9?'warn':''}"><i style="width:${Math.min(100,r*100)}%"></i></div></div>`};
+ const res=o.res||{},pts=perkPts(b);
+ const tabs=[['loadout','Loadout'],['tactics','Tactics'],['perks','Perks'+(pts?` <span class="dotn">${pts}</span>`:'')],['paint','Paint'],['record','Record']];
+ let body='';
+ if(BTAB==='loadout'){body=`<div class="sect" style="margin-top:0">Core systems</div>
+  ${slotRow('Frame',b.frame,'frame',null,'','Sets HP, load limit, mounts and bays')}${slotRow('Drive',b.drive,'drive',null,'','Wheels, treads, legs, hover or omni')}${slotRow('Power core',b.core,'core',null,'','Powers weapons and modules')}${slotRow('Armor',b.armor,'armor',null,'<span class="opt-l">optional</span>','Cuts incoming damage')}${slotRow('AI chip',b.chip,'chip',null,'','Reaction speed and aim')}
+  ${F?`<div class="sect">Hardpoints</div><div class="legend">${szBadge('S')} small weapons · ${szBadge('M')} small or medium · ${szBadge('L')} any size</div>
+  ${F.mounts.map((m,i)=>slotRow('Mount '+(i+1),b.weps[i],'weps',i,szBadge(m[0]),'Takes '+SZFITS[m[0]])).join('')}
+  <div class="sect">Utility bays</div>${Array.from({length:F.util},(_,i)=>slotRow('Bay '+(i+1),b.utils[i],'utils',i,'<span class="opt-l">optional</span>','Shields, repair, boosters, drones…')).join('')}`:'<div class="empty" style="margin-top:10px">Install a frame first. It decides how many weapons and modules the bot can carry.</div>'}`}
+ else if(BTAB==='tactics'){body=`<div class="sect" style="margin-top:0">Behavior <span class="dim small" style="letter-spacing:0;text-transform:none">how it moves</span></div><div class="optgrid">${Object.entries(BEHAVIORS).map(([k,v])=>`<button class="opt ${b.ai.beh===k?'on':''}" data-beh="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>
+  <div class="sect">Targeting <span class="dim small" style="letter-spacing:0;text-transform:none">who it shoots</span></div><div class="optgrid">${Object.entries(TARGETS).map(([k,v])=>`<button class="opt ${b.ai.tgt===k?'on':''}" data-tgt="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>
+  <div class="sect">Fine tuning</div>
+  <div class="slider"><span class="dim" style="width:120px">Engage distance</span><input type="range" min="50" max="110" value="${Math.round(b.ai.eng*100)}" id="sEng"><b id="vEng">${Math.round(b.ai.eng*100)}%</b></div><div class="small dim">How close it fights, as a share of its weapon range. Lower means more aggressive.</div>
+  <div class="slider"><span class="dim" style="width:120px">Retreat below</span><input type="range" min="0" max="60" value="${Math.round(b.ai.ret*100)}" id="sRet"><b id="vRet">${Math.round(b.ai.ret*100)}% HP</b></div><div class="small dim">Below this HP it backs off and looks for repair kits. 0% means it never retreats.</div>`}
+ else if(BTAB==='perks'){const i=rankIdx(b.rep),nx=RANKS[i+1];body=`<div class="card" style="margin-bottom:10px"><div class="row"><div class="grow">${rankHtml(b.rep)} <span class="mono small dim">rep ${b.rep}</span><div class="small dim">${nx?`Next rank: <b style="color:${nx[2]}">${nx[1]}</b> at ${nx[0]} rep`:'Highest rank reached'}</div></div><div style="text-align:right"><div class="mono" style="font-size:22px;color:var(--amber)">${pts}</div><div class="small dim">point${pts===1?'':'s'}</div></div></div>${nx?`<div class="bar" style="margin-top:8px"><i style="width:${Math.min(100,(b.rep-RANKS[i][0])/(nx[0]-RANKS[i][0])*100)}%;background:var(--amber)"></i></div>`:''}</div>
+  <div class="small dim" style="margin-bottom:8px">Each new rank gives one perk point. Tap a perk to learn it.</div>
+  <div class="optgrid">${Object.entries(PERKS).map(([k,v])=>{const has=b.perks.includes(k),can=!has&&pts>0;return `<button class="opt perk ${has?'on':can?'':'lock'}" data-perk="${k}"><span class="ic">${v.i}</span><b>${v.n}${has?' ✓':''}</b><small>${v.d}</small></button>`}).join('')}</div>
+  ${b.perks.length?`<button class="btn small" style="margin-top:8px" id="pReset">Reset perks · ¢${fmt(250*b.perks.length)}</button>`:''}`}
+ else if(BTAB==='paint'){body=`<div class="small dim" style="margin-bottom:5px">Primary</div><div class="swatches">${PAINTS.map(c=>`<button class="sw ${b.paint.p===c?'on':''}" data-pp="${c}" style="background:${c}"></button>`).join('')}</div>
+  <div class="small dim" style="margin:12px 0 5px">Secondary</div><div class="swatches">${PAINTS.map(c=>`<button class="sw ${b.paint.s===c?'on':''}" data-ps="${c}" style="background:${c}"></button>`).join('')}</div>
+  <div class="small dim" style="margin:12px 0 5px">Finish</div><div class="chips">${Object.entries(FINISHES).map(([k,v])=>`<button class="chip ${b.paint.fin===k?'on':''}" data-fin="${k}">${v}</button>`).join('')}</div>
+  <div class="slider"><span class="dim" style="width:120px">Hull number</span><input type="range" min="0" max="99" value="${b.paint.num||0}" id="sNum"><b id="vNum">${b.paint.num||0}</b></div>`}
+ else{body=`${S.nemesis[b.id]?`<div class="nem" style="margin-bottom:8px;font-size:13px">☠ Nemesis: ${esc(S.nemesis[b.id].name)} of ${esc(S.nemesis[b.id].team)}. Destroy it for +25 rep.</div>`:''}
+  <div class="recgrid">${[['Matches',b.st.m],['Wins',b.st.w],['KOs',b.st.k],['Deaths',b.st.d],['MVP',b.st.mvp],['Damage',fmt(b.st.dmg)],['Best streak',b.st.best||0],['Value','¢'+fmt(o.value||0)]].map(([k,v])=>`<div><b class="mono">${v}</b><span>${k}</span></div>`).join('')}</div>
+  ${b.titles.length?`<div style="margin-top:10px">${[...new Set(b.titles)].map(t=>`<span class="trophy" style="display:inline-block;margin:2px">🏆 ${esc(t)}${b.titles.filter(x=>x===t).length>1?' ×'+b.titles.filter(x=>x===t).length:''}</span>`).join('')}</div>`:''}
+  ${(b.hist||[]).length?`<div class="sect">Recent matches</div><div class="card log">${b.hist.slice().reverse().slice(0,8).map(h=>`<div><span class="${h.win?'up':'down'}">${h.win?'W':'L'}</span><span class="grow">vs ${esc(h.vs)}</span><span class="mono dim">${h.k} KO · ${h.dmg} dmg</span><span class="mono ${h.rep>=0?'up':'down'}">${h.rep>=0?'+':''}${h.rep}</span></div>`).join('')}</div>`:'<div class="empty" style="margin-top:10px">No matches yet.</div>'}
+  <div class="row" style="margin-top:16px"><button class="btn danger small" id="bRetire">${b.st.m?'Retire to Hall of Fame':'Scrap bot'}</button><span class="small dim grow">All parts go back to storage.</span></div>`}
+ $('#builder').innerHTML=`<div class="bhead"><button class="btn small" id="bBack">‹ Done</button><input id="bName" maxlength="16" value="${esc(b.name)}"><button class="btn small" id="bHelp">?</button></div>
  <div class="wrap"><div class="bgrid"><div class="bstick">
   <canvas id="bPrev"></canvas>
   <div class="row" style="margin-top:8px"><div class="grow">${rankHtml(b.rep)} <span class="mono small dim">rep ${b.rep}</span>${ep?` <span class="small" style="color:var(--amber);font-style:italic">${esc(ep)}</span>`:''}</div><span class="mono small" style="color:var(--amber)">¢${fmt(o.value||0)}</span></div>
-  <div class="stats">${st('HP',o.hp||0,520)}${st('Armor',(o.arPct||0)*100,60,Math.round((o.arPct||0)*100)+'%')}${st('Speed',o.speed||0,200)}${st('DPS',o.dps||0,140)}${st('Range',o.range||0,700)}${st('Turn',(o.turn||0),10,(o.turn||0).toFixed(1))}</div>
-  ${F?meter('Weight / Load',o.weight,o.load)+meter('Power draw / Output',o.draw,o.pow):''}
-  <div class="small dim" style="margin-top:6px">Resist: kinetic ${Math.round(res.kinetic*100||0)}% · explosive ${Math.round(res.explosive*100||0)}% · energy ${Math.round(res.energy*100||0)}% · thermal ${Math.round(res.thermal*100||0)}%${o.abl?` · ablative ${Math.round(o.abl)}`:''}</div>
-  <div class="warns">${o.warn.map(w=>`<div class="${/Overloaded|Underpowered/.test(w)?'y':''}">⚠ ${esc(w)}</div>`).join('')}${o.ok?'<div style="color:var(--teal)">✓ Battle-ready</div>':''}</div>
+  <div class="stats">${st('HP',o.hp||0,800)}${st('Armor',(o.arPct||0)*100,60,Math.round((o.arPct||0)*100)+'%')}${st('Speed',o.speed||0,200)}${st('DPS',o.dps||0,140)}${st('Range',o.range||0,700,o.range?Math.round(o.range):o.melee?'melee':'—')}${st('Turn',(o.turn||0),10,(o.turn||0).toFixed(1))}</div>
+  ${F?meter('Weight',o.weight,o.load,'must stay under load')+meter('Power',o.draw,o.pow,'draw vs core output'):''}
+  ${F&&(res.kinetic||res.explosive||res.energy||res.thermal||o.abl)?`<div class="chips2" style="margin-top:6px">${['kinetic','explosive','energy','thermal'].filter(k=>res[k]).map(k=>ch(k.toUpperCase()+' RES',Math.round(res[k]*100)+'%')).join('')}${o.abl?ch('SOAK',Math.round(o.abl)):''}</div>`:''}
+  ${adviceHtml(b,o)}
  </div><div>
-  <div class="sect" style="margin-top:0">Core systems</div>
-  ${slotRow('Frame',b.frame,'frame')}${slotRow('Drive',b.drive,'drive')}${slotRow('Power core',b.core,'core')}${slotRow('Armor',b.armor,'armor')}${slotRow('AI chip',b.chip,'chip')}
-  ${F?`<div class="sect">Hardpoints</div>${F.mounts.map((m,i)=>slotRow('Mount '+(i+1),b.weps[i],'weps',i,`<span class="sz">${m[0]}</span>`)).join('')}
-  <div class="sect">Utility bays</div>${Array.from({length:F.util},(_,i)=>slotRow('Bay '+(i+1),b.utils[i],'utils',i)).join('')}`:'<div class="empty" style="margin-top:10px">Install a frame to unlock hardpoints and utility bays.</div>'}
-  <div class="sect">AI behavior</div><div class="optgrid">${Object.entries(BEHAVIORS).map(([k,v])=>`<button class="opt ${b.ai.beh===k?'on':''}" data-beh="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>
-  <div class="sect">Targeting</div><div class="optgrid">${Object.entries(TARGETS).map(([k,v])=>`<button class="opt ${b.ai.tgt===k?'on':''}" data-tgt="${k}"><b>${v.n}</b><small>${v.d}</small></button>`).join('')}</div>
-  <div class="slider"><span class="dim" style="width:110px">Engage distance</span><input type="range" min="50" max="110" value="${Math.round(b.ai.eng*100)}" id="sEng"><b id="vEng">${Math.round(b.ai.eng*100)}%</b></div>
-  <div class="slider"><span class="dim" style="width:110px">Retreat below</span><input type="range" min="0" max="60" value="${Math.round(b.ai.ret*100)}" id="sRet"><b id="vRet">${Math.round(b.ai.ret*100)}% HP</b></div>
-  <div class="sect">Perks <span class="mono" style="color:var(--amber)">${perkPts(b)} point${perkPts(b)===1?'':'s'}</span></div>
-  <div class="small dim" style="margin-bottom:6px">Each rank earned gives one perk point. Next rank: ${(()=>{const i=rankIdx(b.rep);return RANKS[i+1]?RANKS[i+1][1]+' at '+RANKS[i+1][0]+' rep':'max rank'})()}.</div>
-  <div class="optgrid">${Object.entries(PERKS).map(([k,v])=>{const has=b.perks.includes(k),can=!has&&perkPts(b)>0;return `<button class="opt perk ${has?'on':can?'':'lock'}" data-perk="${k}"><span class="ic">${v.i}</span><b>${v.n}</b><small>${v.d}</small></button>`}).join('')}</div>
-  ${b.perks.length?`<button class="btn small" style="margin-top:8px" id="pReset">Reset perks · ¢${fmt(250*b.perks.length)}</button>`:''}
-  <div class="sect">Paint shop</div>
-  <div class="small dim" style="margin-bottom:5px">Primary</div><div class="swatches">${PAINTS.map(c=>`<button class="sw ${b.paint.p===c?'on':''}" data-pp="${c}" style="background:${c}"></button>`).join('')}</div>
-  <div class="small dim" style="margin:9px 0 5px">Secondary</div><div class="swatches">${PAINTS.map(c=>`<button class="sw ${b.paint.s===c?'on':''}" data-ps="${c}" style="background:${c}"></button>`).join('')}</div>
-  <div class="small dim" style="margin:9px 0 5px">Finish</div><div class="chips">${Object.entries(FINISHES).map(([k,v])=>`<button class="chip ${b.paint.fin===k?'on':''}" data-fin="${k}">${v}</button>`).join('')}</div>
-  <div class="slider"><span class="dim" style="width:110px">Hull number</span><input type="range" min="0" max="99" value="${b.paint.num||0}" id="sNum"><b id="vNum">${b.paint.num||0}</b></div>
-  <div class="sect">Service record</div>
-  ${S.nemesis[b.id]?`<div class="nem" style="margin-bottom:6px;font-size:13px">☠ Nemesis: ${esc(S.nemesis[b.id].name)} of ${esc(S.nemesis[b.id].team)}. Destroy it for +25 rep.</div>`:''}
-  <div class="card small"><div class="row" style="flex-wrap:wrap;gap:14px"><span>Matches <b class="mono">${b.st.m}</b></span><span>Wins <b class="mono">${b.st.w}</b></span><span>KOs <b class="mono">${b.st.k}</b></span><span>Deaths <b class="mono">${b.st.d}</b></span><span>MVP <b class="mono">${b.st.mvp}</b></span><span>Damage <b class="mono">${fmt(b.st.dmg)}</b></span><span>Best streak <b class="mono">${b.st.best||0}</b></span></div>
-   ${b.titles.length?`<div style="margin-top:8px">${[...new Set(b.titles)].map(t=>`<span class="trophy" style="display:inline-block;margin:2px">🏆 ${esc(t)}${b.titles.filter(x=>x===t).length>1?' ×'+b.titles.filter(x=>x===t).length:''}</span>`).join('')}</div>`:''}
-   ${(b.hist||[]).length?`<div class="log" style="margin-top:8px">${b.hist.slice().reverse().slice(0,6).map(h=>`<div><span class="${h.win?'up':'down'}">${h.win?'W':'L'}</span><span class="grow">vs ${esc(h.vs)}</span><span class="mono dim">${h.k} KO · ${h.dmg} dmg</span><span class="mono ${h.rep>=0?'up':'down'}">${h.rep>=0?'+':''}${h.rep}</span></div>`).join('')}</div>`:''}</div>
-  <div class="row" style="margin-top:16px"><button class="btn danger small" id="bRetire">${b.st.m?'Retire to Hall of Fame':'Scrap bot'}</button><span class="small dim grow">Parts return to storage.</span></div>
+  <div class="tabs btabs">${tabs.map(([k,n])=>`<button class="${BTAB===k?'on':''}" data-bt="${k}">${n}</button>`).join('')}</div>
+  ${body}
  </div></div></div>`;
  $('#builder').scrollTop=y;
- $('#bBack').onclick=closeBuilder;$('#bName').oninput=e=>{b.name=e.target.value.slice(0,16)||'Unit'};
+ $('#bBack').onclick=closeBuilder;$('#bHelp').onclick=()=>openHelp(BTAB==='tactics'?6:BTAB==='perks'?8:1);$('#bName').oninput=e=>{b.name=e.target.value.slice(0,16)||'Unit'};
+ $$('#builder [data-bt]').forEach(el=>el.onclick=()=>{BTAB=el.dataset.bt;renderBuilder()});
  $$('#builder .slot').forEach(el=>el.onclick=()=>openPicker(el.dataset.k,el.dataset.i===''?null:+el.dataset.i));
- $$('#builder [data-perk]').forEach(el=>el.onclick=()=>{const k=el.dataset.perk;if(b.perks.includes(k))return toast(PERKS[k].n+' already learned');if(perkPts(b)<=0)return toast('No perk points. Rank up by earning reputation.');b.perks.push(k);sfx('level');persist();renderBuilder()});
+ $$('#builder [data-perk]').forEach(el=>el.onclick=()=>{const k=el.dataset.perk;if(b.perks.includes(k))return toast(PERKS[k].n+' already learned');if(perkPts(b)<=0)return toast('No perk points yet. Earn reputation to rank up.');b.perks.push(k);sfx('level');persist();renderBuilder()});
  if($('#pReset'))$('#pReset').onclick=()=>{const c=250*b.perks.length;if(S.credits<c)return toast('Not enough credits');confirmBox('Reset perks?',`Refund all perk points for ¢${fmt(c)}.`,'Reset',()=>{S.credits-=c;b.perks=[];persist();refreshTop();renderBuilder()})};
  $$('#builder [data-beh]').forEach(el=>el.onclick=()=>{b.ai.beh=el.dataset.beh;persist();renderBuilder()});
  $$('#builder [data-tgt]').forEach(el=>el.onclick=()=>{b.ai.tgt=el.dataset.tgt;persist();renderBuilder()});
  $$('#builder [data-pp]').forEach(el=>el.onclick=()=>{b.paint.p=el.dataset.pp;persist();renderBuilder()});
  $$('#builder [data-ps]').forEach(el=>el.onclick=()=>{b.paint.s=el.dataset.ps;persist();renderBuilder()});
  $$('#builder [data-fin]').forEach(el=>el.onclick=()=>{b.paint.fin=el.dataset.fin;persist();renderBuilder()});
- $('#sEng').oninput=e=>{b.ai.eng=e.target.value/100;$('#vEng').textContent=e.target.value+'%'};
- $('#sRet').oninput=e=>{b.ai.ret=e.target.value/100;$('#vRet').textContent=e.target.value+'% HP'};
- $('#sNum').oninput=e=>{b.paint.num=+e.target.value;$('#vNum').textContent=e.target.value};$('#sNum').onchange=()=>{persist();renderBuilder()};
- $('#bRetire').onclick=()=>confirmBox(b.st.m?'Retire '+b.name+'?':'Scrap '+b.name+'?',b.st.m?'Its record and reputation go to the Hall of Fame. All parts return to storage.':'All parts return to storage.',b.st.m?'Retire':'Scrap',()=>{
+ if($('#sEng')){$('#sEng').oninput=e=>{b.ai.eng=e.target.value/100;$('#vEng').textContent=e.target.value+'%'};$('#sEng').onchange=()=>{persist();renderBuilder()}}
+ if($('#sRet')){$('#sRet').oninput=e=>{b.ai.ret=e.target.value/100;$('#vRet').textContent=e.target.value+'% HP'};$('#sRet').onchange=persist}
+ if($('#sNum')){$('#sNum').oninput=e=>{b.paint.num=+e.target.value;$('#vNum').textContent=e.target.value};$('#sNum').onchange=()=>{persist();renderBuilder()}}
+ if($('#bRetire'))$('#bRetire').onclick=()=>confirmBox(b.st.m?'Retire '+b.name+'?':'Scrap '+b.name+'?',b.st.m?'Its record and reputation go to the Hall of Fame. All parts return to storage.':'All parts return to storage.',b.st.m?'Retire':'Scrap',()=>{
   S.bots=S.bots.filter(x=>x!==b);if(b.st.m)S.retired.push({name:b.name,rep:b.rep,st:b.st,titles:b.titles,paint:b.paint,ret:S.matches});syncEquip();persist();closeBuilder()});
- afterPaint(()=>$$('#builder canvas[data-p]').forEach(c=>{const p=S.inv[c.dataset.p];if(p)partIcon(c,p,b.paint);else{const x=c.getContext('2d');c.width=c.clientWidth*2;c.height=c.clientHeight*2;x.fillStyle='#0d1116';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#2a3340';x.setLineDash([4,4]);x.strokeRect(4,4,c.width-8,c.height-8)}}));
+ afterPaint(()=>$$('#builder canvas[data-p]').forEach(c=>{const p=S.inv[c.dataset.p];if(p)partIcon(c,p,b.paint);else{const x=c.getContext('2d');c.width=c.clientWidth*2;c.height=c.clientHeight*2;x.fillStyle='#0d1116';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#2a3340';x.lineWidth=2;x.setLineDash([5,5]);x.strokeRect(5,5,c.width-10,c.height-10);x.fillStyle='#3a4656';x.font='600 34px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('+',c.width/2,c.height/2+2)}}));
 }
-function partLine(p){const B=baseOf(p),m=TIERS[p.t].mul,a=p.af;
- switch(p.c){
-  case 'frame':return `${Math.round(B.hp*m)} HP · load ${B.load} · armor ${B.armor} · mounts ${B.mounts.map(x=>x[0]).join('')} · ${B.util} bay${B.util>1?'s':''}`;
-  case 'drive':return `speed ${Math.round(B.speed*(1+(m-1)*.5))} · load ${B.load>=0?'+':''}${B.load} · turn ×${B.turn}${B.haz?` · slag resist ${B.haz*100}%`:''}`;
-  case 'core':return `${Math.round(B.pow*m*10)/10} power · ${B.w} wt${B.boom?' · volatile':''}`;
-  case 'armor':return `+${Math.round(B.ar*m)} armor · +${Math.round(B.hp*m*100)}% HP · ${B.w} wt${Object.keys(B.res).length?' · '+Object.entries(B.res).map(([k,v])=>k+' '+v*100+'%').join(', '):''}`;
-  case 'weapon':{const d=Math.round(B.dmg*m*(1+(a.dmg||0))*10)/10;return `${B.ty} · ${d}${B.pellets?'×'+B.pellets:''}${B.salvo>1?'×'+B.salvo:''} dmg · ${(1/B.cd*(1+(a.rate||0))).toFixed(1)}/s · ${B.kind==='melee'?'melee':Math.round(B.rng*(1+(a.range||0)))+' rng'} · ${B.w} wt · ${B.p} pwr`}
-  case 'util':return `${B.desc} · ${B.w} wt · ${B.p} pwr`;
-  case 'chip':return B.desc;
- }}
 // ================= part picker =================
 const SLOTCAT={frame:'frame',drive:'drive',core:'core',armor:'armor',chip:'chip',weps:'weapon',utils:'util'};
 function openPicker(key,idx){
@@ -219,16 +218,19 @@ function openPicker(key,idx){
  const mountSz=key==='weps'?SZ[FRAMES[S.inv[b.frame].k].mounts[idx][0]]:3;
  const fits=k=>cat!=='weapon'||WEAPONS[k].sz<=mountSz;
  const own=Object.values(S.inv).filter(p=>p.c===cat&&fits(p.k)&&p.id!==cur).sort((x,y)=>(x.on?1:0)-(y.on?1:0)||partValue(y)-partValue(x));
- const cats=Object.keys(CATS[cat]).filter(fits);
+ const cats=Object.keys(CATS[cat]).filter(fits).sort((x,y)=>CATS[cat][x].lv-CATS[cat][y].lv||CATS[cat][x].cost-CATS[cat][y].cost);
+ const big=cat==='weapon'?Object.keys(WEAPONS).filter(k=>!fits(k)):[];
  const optional=key!=='frame'&&key!=='drive'&&key!=='core'&&key!=='chip';
- const row=(p,right,cls='',attrs='')=>`<button class="prow ${cls}" ${attrs}><canvas data-pi="${p.id||''}" data-ck="${p.k}" data-ct="${p.t||1}"></canvas><div class="grow"><div class="pn" style="${p.t>1?'color:'+TIERS[p.t].col:''}">${esc(p.id?partName(p):baseOf(p).n)}</div>${p.af&&Object.keys(p.af).length?`<div class="af">${affixText(p).join(' · ')}</div>`:''}<div class="st">${partLine(p)}</div></div><div class="pr">${right}</div></button>`;
- const title=cat==='weapon'?`Weapon · ${'SML'[mountSz-1]} mount`:CATNAME[cat];
+ const row=(p,right,cls='',attrs='')=>`<button class="prow ${cls}" ${attrs}><canvas data-pi="${p.id||''}" data-ck="${p.k}" data-ct="${p.t||1}"></canvas><div class="grow"><div class="pn" style="${p.t>1?'color:'+TIERS[p.t].col:''}">${esc(p.id?partName(p):baseOf(p).n)}</div>${p.af&&Object.keys(p.af).length?`<div class="af">${affixText(p).join(' · ')}</div>`:''}${cat==='weapon'?`<div class="small dim">${WDESC[p.k]}</div>`:p.c!=='util'&&p.c!=='chip'&&baseOf(p).desc?`<div class="small dim">${baseOf(p).desc}</div>`:''}<div class="chips2">${partLine(p)}</div></div><div class="pr">${right}</div></button>`;
+ const title=cat==='weapon'?`Weapon for Mount ${idx+1} ${szBadge(mountSz)}`:CATNAME[cat];
  const body=openSheet(`<div class="sheet-h"><h3 class="grow">${title}</h3><span class="pill cr">¢ ${fmt(S.credits)}</span><button class="btn small ghost" onclick="closeSheet()">✕</button></div>
- ${cur?`<div class="small dim" style="margin-bottom:6px">Installed</div>${row(S.inv[cur],optional?'<span class="dim">Remove</span>':'',' ','data-rm="1"')}`:''}
- <div class="sect">Your parts</div>${own.length?own.map(p=>row(p,p.on?`<span class="dim small">on ${esc(S.bots.find(x=>x.id===p.on)?.name||'?')}</span>`:'<span class="up">Install</span>','',`data-own="${p.id}"`)).join(''):'<div class="empty">No compatible spare parts.</div>'}
- <div class="sect">Buy new (Mk I)</div>${cats.map(k=>{const B=CATS[cat][k],lock=B.lv>S.unlocked,cant=!lock&&S.credits<B.cost;return row({c:cat,k,t:1,af:{}},lock?`<span class="small">🔒 ${LEAGUES[B.lv].n}</span>`:'¢'+fmt(B.cost),lock?'locked':cant?'cant':'',lock?'':`data-buy="${k}"`)}).join('')}
- <div class="small dim" style="margin-top:8px">Refined, Prototype and Masterwork parts with bonus affixes show up in the Parts market.</div>`);
- const install=id=>{equip(b,key,idx,id);closeSheet();renderBuilder()};
+ ${cat==='weapon'?`<div class="legend" style="margin-bottom:8px">This mount takes ${SZFITS['SML'[mountSz-1]]}.</div>`:''}
+ ${cur?`<div class="small dim" style="margin-bottom:6px">Installed now</div>${row(S.inv[cur],optional?'<span class="btn small">Remove</span>':'',' ','data-rm="1"')}`:''}
+ <div class="sect">Your parts</div>${own.length?own.map(p=>row(p,p.on?`<span class="dim small">swap from<br>${esc(S.bots.find(x=>x.id===p.on)?.name||'?')}</span>`:'<span class="btn small primary">Install</span>','',`data-own="${p.id}"`)).join(''):'<div class="empty">No spare parts that fit. Buy one below.</div>'}
+ <div class="sect">Buy new · Mk I</div>${cats.map(k=>{const B=CATS[cat][k],lock=B.lv>S.unlocked,cant=!lock&&S.credits<B.cost;return row({c:cat,k,t:1,af:{}},lock?`<span class="small">🔒 ${LEAGUES[B.lv].n}</span>`:`<span class="btn small">¢${fmt(B.cost)}</span>`,lock?'locked':cant?'cant':'',lock?'':`data-buy="${k}"`)}).join('')}
+ ${big.length?`<div class="sect">Too big for this mount</div><div class="small dim" style="margin-bottom:6px">These need a bigger mount. Frames like Rhino, Viper, Golem and Citadel have ${szBadge('L')} mounts.</div>${big.map(k=>row({c:cat,k,t:1,af:{}},`<span class="small">needs ${szBadge(WEAPONS[k].sz)}</span>`,'locked')).join('')}`:''}
+ <div class="small dim" style="margin-top:8px">Better versions (Mk II–IV) with bonus affixes show up in the Parts market.</div>`);
+ const install=id=>{equip(b,key,idx,id);sfx('buy');closeSheet();renderBuilder()};
  body.querySelectorAll('[data-own]').forEach(el=>el.onclick=()=>install(el.dataset.own));
  body.querySelectorAll('[data-buy]').forEach(el=>el.onclick=()=>{const k=el.dataset.buy;if(S.credits<CATS[cat][k].cost)return toast('Not enough credits');const p=buyCatalog(cat,k);refreshTop();install(p.id)});
  const rm=body.querySelector('[data-rm]');if(rm&&optional)rm.onclick=()=>{if(key==='weps'||key==='utils')b[key][idx]=null;else b[key]=null;syncEquip();persist();closeSheet();renderBuilder()};
@@ -244,10 +246,12 @@ let SHOPTAB='market',SHOPCAT='weapon';
 function renderShop(){
  const tabs=`<div class="tabs">${[['market','Market'],['catalog','Catalog'],['workshop','Workshop'],['storage','Storage']].map(([k,n])=>`<button class="${SHOPTAB===k?'on':''}" data-st="${k}">${n}</button>`).join('')}</div>`;
  const catChips=`<div class="chips" style="margin-bottom:10px">${Object.keys(CATS).map(c=>`<button class="chip ${SHOPCAT===c?'on':''}" data-sc="${c}">${CATNAME[c]}</button>`).join('')}</div>`;
- const row=(p,right,attrs='',cls='')=>`<div class="prow ${cls}" ${attrs}><canvas data-pi="${p.id||''}" data-ck="${p.k}" data-cc="${p.c}"></canvas><div class="grow"><div class="pn" style="${p.t>1?'color:'+TIERS[p.t].col:''}">${esc(p.id?partName(p):baseOf(p).n)} ${p.t>1?`<span class="tag" style="color:${TIERS[p.t].col}">${TIERS[p.t].n}</span>`:''}</div>${Object.keys(p.af||{}).length?`<div class="af">${affixText(p).join(' · ')}</div>`:''}<div class="st">${CATNAME[p.c]}${p.on?' · on '+esc(S.bots.find(x=>x.id===p.on)?.name||''):''} · ${partLine(p)}</div></div>${right}</div>`;
+ const row=(p,right,attrs='',cls='')=>`<div class="prow ${cls}" ${attrs}><canvas data-pi="${p.id||''}" data-ck="${p.k}" data-cc="${p.c}"></canvas><div class="grow"><div class="pn" style="${p.t>1?'color:'+TIERS[p.t].col:''}">${esc(p.id?partName(p):baseOf(p).n)} ${p.t>1?`<span class="tag" style="color:${TIERS[p.t].col}">${TIERS[p.t].n}</span>`:''}</div>${Object.keys(p.af||{}).length?`<div class="af">${affixText(p).join(' · ')}</div>`:''}<div class="st">${CATNAME[p.c]}${p.on?' · on '+esc(S.bots.find(x=>x.id===p.on)?.name||''):''}</div><div class="chips2">${partLine(p)}</div></div>${right}</div>`;
  let html=`<h2>Parts</h2><div style="height:10px"></div>`+tabs;
  if(SHOPTAB==='market'){html+=`<div class="row small dim" style="margin-bottom:8px"><span class="grow">Rare stock with random affixes. Restocks after every match.</span><button class="btn small" id="reroll" ${S.credits<150?'disabled':''}>Restock ¢150</button></div>`+(S.market.length?S.market.map((p,i)=>row(p,`<button class="btn small ${S.credits<partValue(p)?'':'primary'}" data-bm="${i}" ${S.credits<partValue(p)?'disabled':''}>¢${fmt(partValue(p))}</button>`)).join(''):'<div class="empty">Sold out. Restock or play a match.</div>')}
- else if(SHOPTAB==='catalog'){html+=catChips+Object.keys(CATS[SHOPCAT]).map(k=>{const B=CATS[SHOPCAT][k],lock=B.lv>S.unlocked;return row({c:SHOPCAT,k,t:1,af:{}},lock?`<span class="small dim">🔒 ${LEAGUES[B.lv].n}</span>`:`<button class="btn small" data-bc="${k}" ${S.credits<B.cost?'disabled':''}>¢${fmt(B.cost)}</button>`,'',lock?'locked':'')}).join('')}
+ else if(SHOPTAB==='catalog'){const crow=k=>{const B=CATS[SHOPCAT][k],lock=B.lv>S.unlocked;return row({c:SHOPCAT,k,t:1,af:{}},lock?`<span class="small dim">🔒 ${LEAGUES[B.lv].n}</span>`:`<button class="btn small" data-bc="${k}" ${S.credits<B.cost?'disabled':''}>¢${fmt(B.cost)}</button>`,'',lock?'locked':'')};
+  const keys=Object.keys(CATS[SHOPCAT]).sort((x,y)=>CATS[SHOPCAT][x].lv-CATS[SHOPCAT][y].lv||CATS[SHOPCAT][x].cost-CATS[SHOPCAT][y].cost);
+  html+=catChips+(SHOPCAT==='weapon'?[1,2,3].map(z=>`<div class="sect">${szBadge(z)} ${SZNAME[z]} weapons</div><div class="small dim" style="margin:-4px 0 8px">Fit ${z===1?'any mount (S, M or L)':z===2?'M or L mounts':'L mounts only'}.</div>`+keys.filter(k=>WEAPONS[k].sz===z).map(crow).join('')).join(''):keys.map(crow).join(''))}
  else if(SHOPTAB==='workshop'){const all=Object.values(S.inv).sort((a,b)=>(b.on?1:0)-(a.on?1:0)||b.t-a.t||partValue(b)-partValue(a));
   html+=`<div class="small dim" style="margin-bottom:8px">Upgrade a part one tier (it gains a new random affix) or reroll its affixes. Works on installed parts too.</div>`+all.map(p=>{const uc=upgradeCost(p),rc=Object.keys(p.af).length?rerollCost(p):0;
    return row(p,`<div style="display:flex;flex-direction:column;gap:5px;align-items:stretch">${uc?`<button class="btn small ${S.credits>=uc?'primary':''}" data-up="${p.id}" ${S.credits<uc?'disabled':''}>▲ ${TIERS[p.t+1].mk} ¢${fmt(uc)}</button>`:'<span class="small" style="color:var(--amber)">Max tier</span>'}${rc?`<button class="btn small" data-rr="${p.id}" ${S.credits<rc?'disabled':''}>⟳ ¢${fmt(rc)}</button>`:''}</div>`,p.on?'':'')+(p.on?'':'')}).join('')}
@@ -278,7 +282,8 @@ function renderRecords(){
 // ================= boot =================
 function showIntro(){$$('.screen').forEach(s=>s.classList.remove('on'));$('#intro').classList.add('on');$('#nav').style.display='none';$('#topbar').style.display='none'}
 $('#introImp').onclick=importSave;
-$('#startCareer').onclick=()=>{newCareer(($('#teamName').value||'').trim().slice(0,22)||'Garage Rats');show('career')};
+$('#startCareer').onclick=()=>{newCareer(($('#teamName').value||'').trim().slice(0,22)||'Garage Rats');show('career');showTutorial(0)};
+$('#helpTop').onclick=()=>openHelp();
 $$('.sndBtn').forEach(b=>b.onclick=e=>{e.stopPropagation();audioInit();setSound(!SND.on)});setSound(SND.on);
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.classList.contains('sndBtn'))sfx('click')});
 S=loadSave();if(S)show('career');else showIntro();
@@ -314,7 +319,7 @@ function testEnd(Gm){const me=Gm.bots.filter(b=>b.team===0),t=Math.max(1,Gm.t);
  $('#trBack').onclick=()=>{closeDlg();endBattle();show('garage')};$('#trAgain').onclick=()=>{closeDlg();endBattle();startTest()}}
 
 // ================= save backup =================
-function saveCode(){return 'BA2:'+btoa(unescape(encodeURIComponent(JSON.stringify(S))))}
+function saveCode(){return 'BA4:'+btoa(unescape(encodeURIComponent(JSON.stringify(S))))}
 function exportSave(){const code=saveCode();const b=openSheet(`<h3>Export save</h3><p class="small dim" style="margin:6px 0 10px">Copy this code and paste it into Import on the other copy of the game.</p>
  <textarea id="saveTxt" readonly style="width:100%;height:120px;background:#0b0f14;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font:11px 'JetBrains Mono',monospace;word-break:break-all">${code}</textarea>
  <div class="row" style="margin-top:10px"><button class="btn grow" onclick="closeDlg()">Close</button><button class="btn primary grow" id="copyBtn">Copy</button></div>`,true);
@@ -322,4 +327,4 @@ function exportSave(){const code=saveCode();const b=openSheet(`<h3>Export save</
 function importSave(){openSheet(`<h3>Import save</h3><p class="small dim" style="margin:6px 0 10px">Paste a save code. This replaces the career on this device.</p>
  <textarea id="impTxt" style="width:100%;height:120px;background:#0b0f14;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font:11px 'JetBrains Mono',monospace"></textarea>
  <div class="row" style="margin-top:10px"><button class="btn grow" onclick="closeDlg()">Cancel</button><button class="btn primary grow" id="doImp">Import</button></div>`,true);
- $('#doImp').onclick=()=>{try{const raw=$('#impTxt').value.trim().replace(/^BA2:/,'');const s=JSON.parse(decodeURIComponent(escape(atob(raw))));if(!s||s.v!==2||!s.bots)throw 0;S=migrate(s);persist();closeDlg();toast('Career imported');show('career')}catch(e){toast('That code is not a valid save')}}}
+ $('#doImp').onclick=()=>{try{const raw=$('#impTxt').value.trim().replace(/^BA[0-9]:/,'');const s=JSON.parse(decodeURIComponent(escape(atob(raw))));if(!s||s.v!==2||!s.bots)throw 0;S=migrate(s);persist();closeDlg();toast('Career imported');show('career')}catch(e){toast('That code is not a valid save')}}}

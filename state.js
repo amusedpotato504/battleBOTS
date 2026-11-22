@@ -1,6 +1,8 @@
 'use strict';
 // ================= save state =================
-const SAVE_KEY='botarena_career_v2';
+const SAVE_KEY='botarena_career_v4';
+// v4 starts fresh: remove saves from older versions
+try{['botarena_career_v2','botarena_v1'].forEach(k=>localStorage.removeItem(k))}catch(e){}
 let S=null;
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.v===2)return migrate(s)}catch(e){}return null}
@@ -108,8 +110,8 @@ function genEnemyBot(budget,li,seed,paint){
  const L=LEAGUES[li],R=mulberry(seed);
  const ok=(o,k)=>o[k].lv<=L.lv;
  const tier=()=>1+wpick(R,L.tw);
- let best=null,bs=-1e9;
- for(let tries=0;tries<70;tries++){
+ let best=null,bs=-1e9,cheap=null;
+ for(let tries=0;tries<110;tries++){
   const inv={};let n=0;const P=(c,k)=>{const t=tier();const p={id:'e'+(n++),c,k,t,af:{}};if(t>1)rollAffixes(p,TIERS[t].af,R);inv[p.id]=p;return p.id};
   const fr=Object.keys(FRAMES).filter(k=>ok(FRAMES,k)&&FRAMES[k].cost<=budget*.45);if(!fr.length)continue;
   const fk=fr[wpick(R,fr.map(k=>Math.pow(FRAMES[k].cost+300,li*.45)))],F=FRAMES[fk];
@@ -123,14 +125,14 @@ function genEnemyBot(budget,li,seed,paint){
   const cks=Object.keys(CORES).filter(k=>ok(CORES,k)).sort((x,y)=>CORES[x].pow-CORES[y].pow);const ck=cks.find(k=>CORES[k].pow>=dr*(R()<.3?1.15:1))||cks[cks.length-1];b.core=P('core',ck);wt+=CORES[ck].w;
   const dks=Object.keys(DRIVES).filter(k=>ok(DRIVES,k));let fitD=dks.filter(k=>F.load+DRIVES[k].load>=wt*.98);if(!fitD.length)fitD=['treads'];b.drive=P('drive',wp(DRIVES,fitD));
   const o=compute(b,inv);if(!o.ok)continue;
-  const v=o.value;let sc=-Math.abs(budget-v)/budget;if(v>budget*1.12)sc-=2;if(o.powMul<.8)sc-=.5;if(o.wr>1.05)sc-=.6;sc+=R()*.15;
+  const v=o.value;if(!cheap||v<cheap.o.value)cheap={b,inv,o};if(v>budget*1.1)continue;const pw=Math.sqrt(o.hp*o.dps)*(.75+Math.min(o.range,450)/900)*(.8+.2*Math.min(1,o.speed/120));let sc=pw*(1+R()*.12)*Math.min(1,o.powMul+.1)*(o.wr>1.02?.85:1)*(.85+.15*v/budget);
   if(sc>bs){bs=sc;best={b,inv,o}}
  }
- return best;
+ return best||cheap;
 }
 function enemySquad(team,li,ladder,exhibition){
  const L=LEAGUES[li],rv=S.rivals[team];
- const mult=exhibition?.85:ladder>=4?1.35:(.8+ladder*.1);
+ const mult=exhibition?.85:ladder>=4?1.25:(.78+ladder*.1);
  const per=L.bud*mult/L.sq;
  const bots=rv.bots.slice().sort((a,b)=>b.rep-a.rep).slice(0,L.sq);
  return bots.map((rb,i)=>{const g=genEnemyBot(per*(i===0?1.12:.96),li,hashStr(team+rb.name)+S.matches*31+i,rv.paint);
