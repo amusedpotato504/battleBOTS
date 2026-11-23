@@ -204,7 +204,7 @@ function fireWeapon(b,w,t){
   G.bolts.push({pts,life:.18,ml:.18});pts.slice(1).forEach(([x,y])=>{spark(x,y,6,'#bfe0ff',180);flashL(x,y,60,'#8fc8ff',.1)})}
 }
 const k3=W=>W.sz===3;
-function meleeHit(b,w,t){const W=w.W;b.lastShot=G.t;sfx(w.k==='saw'?'saw':'clank',t.x,t.y,W.sz===3?1.4:1);const d=damage(t,w.dmg,b,'kinetic',w);const a=Math.atan2(t.y-b.y,t.x-b.x);knock(t,Math.cos(a),Math.sin(a),W.knock||70);if(W.stunT)stunT(t,W.stunT);
+function meleeHit(b,w,t){const W=w.W;b.lastShot=G.t;sfx(w.k==='saw'||w.k==='drill'?'saw':'clank',t.x,t.y,W.sz===3?1.4:1);const d=damage(t,w.dmg,b,'kinetic',w);const a=Math.atan2(t.y-b.y,t.x-b.x);knock(t,Math.cos(a),Math.sin(a),W.knock||70);if(W.stunT)stunT(t,W.stunT);
  if(t.o.util.spikes&&!b.dead)damage(b,w.dmg*t.o.util.spikes.val,t,'kinetic');
  const hx=(b.x+t.x)/2,hy=(b.y+t.y)/2;spark(hx,hy,W.sz*5,'#ffe9a8',260);mark(t,hx,hy,3);if(W.sz===3){G.shake=Math.max(G.shake,7);flashL(hx,hy,60,'#ffd890',.08)}w.recoil=-4}
 // ---------- step ----------

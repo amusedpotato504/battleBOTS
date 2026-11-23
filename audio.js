@@ -47,4 +47,4 @@ function sfx(name,x,y,vol=1){
   case 'level':[660,880,1100].forEach((f,i)=>{const o=SND.ctx.createOscillator();o.type='square';o.frequency.value=f;o.start(t+i*.09);o.stop(t+i*.09+.15);const gg=out(o,1,0);env(gg,t+i*.09,.005,.07,.12)});break;
  }
 }
-const WSND={lmg:'gun',minigun:'gun',needle:'small',pulse:'pulse',autocannon:'heavy',cannon:'heavy',shotgun:'shotgun',laser:'laser',lance:'laser',rockets:'rocket',microm:'rocket',missiles:'rocket',grenade:'thump',mortar:'thump',flamer:'flame',torch:'flame',inferno:'flame',tesla:'zap',rail:'rail'};
+const WSND={lmg:'gun',minigun:'gun',needle:'small',pulse:'pulse',autocannon:'heavy',cannon:'heavy',shotgun:'shotgun',laser:'laser',lance:'laser',rockets:'rocket',microm:'rocket',missiles:'rocket',grenade:'thump',mortar:'thump',flamer:'flame',torch:'flame',inferno:'flame',tesla:'zap',rail:'rail',smg:'gun',sawnoff:'shotgun',zapper:'zap',minilaser:'laser'};

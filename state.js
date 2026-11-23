@@ -61,7 +61,7 @@ function compute(b,inv=S.inv){
  if(!f){o.ok=false;o.warn.push('Needs a frame');o.r=15;o.hp=0;o.speed=0;o.dps=0;o.range=0;o.load=1;o.pow=0;o.armor=0;o.arPct=0;return o}
  const F=FRAMES[f.k];o.F=F;o.fk=f.k;o.r=F.r;
  let hpMul=1+(A(f).hp||0),armor=F.armor+(A(f).armor||0),load=F.load*(1+(A(f).load||0)),spdMul=F.spd*(1+(A(f).speed||0)),hp=F.hp*TIERS[f.t].mul;
- if(dr){const D=DRIVES[dr.k];o.dk=dr.k;load+=D.load*(1+(A(dr).load||0));o.base=D.speed*(1+(TIERS[dr.t].mul-1)*.5)*(1+(A(dr).speed||0));o.acc=D.acc*(1+(A(dr).accel||0));o.turn=F.turn*D.turn;o.knock=D.knock;o.haz=D.haz;o.omni=!!D.omni;o.hover=dr.k==='hover'}
+ if(dr){const D=DRIVES[dr.k];o.dk=dr.k;load+=D.load*(1+(A(dr).load||0));o.base=D.speed*(1+(TIERS[dr.t].mul-1)*.5)*(1+(A(dr).speed||0));o.acc=D.acc*(1+(A(dr).accel||0));o.turn=F.turn*D.turn;o.knock=D.knock;o.haz=D.haz;o.omni=!!D.omni;o.hover=!!D.hover}
  else{o.ok=false;o.warn.push('Needs a drive');o.base=0;o.acc=5;o.turn=F.turn;o.knock=0;o.haz=0}
  if(co){const C=CORES[co.k];o.pow=C.pow*TIERS[co.t].mul*(1+(A(co).pow||0));o.weight+=C.w*(1-(A(co).light||0));o.boom=A(co).stable?0:C.boom;o.burst=!!C.burst;o.ck=co.k}
  else{o.ok=false;o.warn.push('Needs a power core');o.pow=0}
@@ -137,7 +137,7 @@ function genEnemyBot(budget,li,seed,paint){
 }
 function enemySquad(team,li,ladder,exhibition){
  const L=LEAGUES[li],rv=S.rivals[team];
- const mult=exhibition?.85:ladder>=4?1.25:(.78+ladder*.1);
+ const mult=exhibition?.85:ladder>=4?1.3:(.72+ladder*.12);
  const per=L.bud*mult/L.sq;
  const bots=rv.bots.slice().sort((a,b)=>b.rep-a.rep).slice(0,L.sq);
  return bots.map((rb,i)=>{const g=genEnemyBot(per*(i===0?1.12:.96),li,hashStr(team+rb.name)+S.matches*31+i,rv.paint);

@@ -184,7 +184,7 @@ const MAPS={
 
 // ================= career data =================
 const LEAGUES=[
- {n:'Scrap League',sq:2,bud:4000,purse:650,repMul:1,tw:[.7,.3,0,0],lv:0,rep:[5,45],teams:['Rustbucket Raiders','Junkyard Dogs','Bolt Brothers','Spare Parts Co.'],champ:'The Scrap King'},
+ {n:'Scrap League',sq:2,bud:3450,purse:650,repMul:1,tw:[.7,.3,0,0],lv:0,rep:[5,45],teams:['Rustbucket Raiders','Junkyard Dogs','Bolt Brothers','Spare Parts Co.'],champ:'The Scrap King'},
  {n:'Steel Circuit',sq:3,bud:10500,purse:1350,repMul:1.3,tw:[.6,.35,.05,0],lv:1,rep:[60,220],teams:['Chrome Syndicate','Voltage Vandals','Gearhead Gang','Piston Union'],champ:'Steel Tyrants'},
  {n:'Iron Majors',sq:3,bud:20500,purse:2500,repMul:1.6,tw:[.5,.38,.12,0],lv:2,rep:[200,480],teams:['Iron Legion','Thunder Works','Red Dynamo','Blackforge'],champ:'Ironclad Dynasty'},
  {n:'Titan Series',sq:4,bud:38000,purse:4500,repMul:2,tw:[.3,.42,.23,.05],lv:3,rep:[420,950],teams:['Titan Forge','Neon Reapers','Omega Labs','Atlas Heavy'],champ:'Colossus Corp'},
@@ -233,3 +233,51 @@ const BOUNTIES={
  dominant:{n:'Dominant',d:'Win with every surviving bot above 50% HP.'}
 };
 function rankIdx(rep){let i=0;RANKS.forEach((r,k)=>{if(rep>=r[0])i=k});return i}
+
+// ================= v7: expanded parts catalog =================
+Object.assign(FRAMES,{
+ scarab:{n:'Scarab Crawler',cost:500,lv:0,hp:120,load:95,armor:2,r:16,spd:.95,turn:5.5,mounts:[['S',.45,-.5],['S',.45,.5]],util:2,desc:'Cheap, armored and steady.',
+  body:[[.95,-.35],[1.05,0],[.95,.35],[.6,.88],[-.5,.92],[-.95,.55],[-1,0],[-.95,-.55],[-.5,-.92],[.6,-.88]],panels:[[[-.75,-.42],[.15,-.42],[.15,.42],[-.75,.42]]],vents:[[-.95,-.2,.14,.4]],lights:[[1.0,-.15],[1.0,.15]]},
+ warlord:{n:'Warlord Dreadnought',cost:4300,lv:3,hp:235,load:245,armor:3,r:26,spd:.78,turn:2.8,mounts:[['L',.28,0],['M',-.38,-.62],['M',-.38,.62]],util:2,desc:'Huge command platform.',
+  body:[[1.1,-.3],[1.1,.3],[.85,.85],[.2,1],[-.7,.95],[-1.05,.55],[-1.05,-.55],[-.7,-.95],[.2,-1],[.85,-.85]],panels:[[[.9,-.22],[1.08,-.22],[1.08,.22],[.9,.22]],[[-.98,-.3],[-.62,-.3],[-.62,.3],[-.98,.3]]],vents:[[.3,-.9,.35,.12],[.3,.78,.35,.12]],lights:[[1.08,-.45],[1.08,.45]]}
+});
+Object.assign(DRIVES,{
+ lighttracks:{n:'Light Tracks',cost:300,lv:0,speed:122,acc:5,turn:.9,load:25,knock:.4,haz:.1,art:'treads'},
+ racing:{n:'Racing Slicks',cost:650,lv:1,speed:174,acc:4,turn:.85,load:-5,knock:-.1,haz:0,art:'wheels'},
+ gyroball:{n:'Gyro Sphere',cost:1000,lv:2,speed:162,acc:8,turn:1.6,load:-15,knock:-.2,haz:.2,art:'ball'},
+ hexapod:{n:'Hexapod Legs',cost:1300,lv:2,speed:102,acc:9,turn:1.5,load:40,knock:.45,haz:.6,art:'legs6'},
+ maglev:{n:'Mag-Lev Pads',cost:2300,lv:3,speed:156,acc:6,turn:1.3,load:10,knock:0,haz:1,omni:true,hover:true,art:'maglev'}
+});
+DRIVES.hover.hover=true;
+Object.assign(CORES,{
+ solar:{n:'Solar Cell Array',cost:80,lv:0,pow:8,w:4,boom:0,col:'#ffe066'},
+ diesel:{n:'Diesel Generator',cost:260,lv:0,pow:13,w:17,boom:0,col:'#c08040'},
+ twin:{n:'Twin Battery Pack',cost:620,lv:1,pow:18,w:15,boom:0,col:'#7dffb0'},
+ plasma:{n:'Plasma Cell',cost:1050,lv:2,pow:21,w:13,boom:30,col:'#ff6ad5'},
+ quantum:{n:'Quantum Cell',cost:2000,lv:3,pow:28,w:12,boom:0,col:'#7fe0ff'},
+ singularity:{n:'Singularity Core',cost:3600,lv:3,pow:42,w:30,boom:140,col:'#a070ff'}
+});
+Object.assign(ARMORS,{
+ scrap:{n:'Scrap Plating',cost:90,lv:0,ar:1,hp:.05,w:9,res:{},col:'#7a6a55'},
+ aluminum:{n:'Aluminum Panels',cost:320,lv:0,ar:1,hp:.08,w:5,res:{},col:'#c8ccd0'},
+ spaced:{n:'Spaced Armor',cost:800,lv:1,ar:2,hp:.05,w:11,res:{explosive:.2,kinetic:.1},col:'#6a7060'},
+ mirror:{n:'Reflective Coating',cost:1100,lv:2,ar:1,hp:.05,w:6,res:{energy:.45},col:'#e0f0ff'},
+ nano:{n:'Nanoweave Skin',cost:2400,lv:3,ar:3,hp:.12,w:8,res:{thermal:.2,energy:.1},col:'#3a4a5a'}
+});
+Object.assign(CHIPS,{
+ salvaged:{n:'Salvaged Processor',cost:40,lv:0,react:1.1,aim:.9,lead:.45,col:'#c0a070'},
+ veteran:{n:'Veteran Instinct Chip',cost:320,lv:0,react:.75,aim:1.1,lead:.65,col:'#ffb020'},
+ hunter:{n:'Hunter-Killer Module',cost:650,lv:1,react:.6,aim:1.2,lead:.95,col:'#ff6a5a'},
+ reflex:{n:'Reflex Booster',cost:800,lv:1,react:.4,aim:1.15,lead:.7,col:'#ffe066'},
+ marksman:{n:'Marksman AI',cost:950,lv:1,react:.7,aim:1.45,lead:.9,col:'#7fe0ff'},
+ swarm:{n:'Swarm Link',cost:1300,lv:2,react:.45,aim:1.3,lead:.85,col:'#7dffb0'},
+ predictive:{n:'Predictive Core',cost:1500,lv:2,react:.5,aim:1.4,lead:1,col:'#b07cff'},
+ quantummind:{n:'Quantum Mind',cost:2800,lv:3,react:.25,aim:1.8,lead:1,dodge:true,col:'#ff7bd8'}
+});
+Object.assign(WEAPONS,{
+ smg:{n:'Submachine Gun',sz:1,ty:'kinetic',kind:'proj',cost:250,lv:0,w:5,p:2,dmg:2.4,cd:.07,rng:200,spd:720,spr:.2,shell:true,len:13},
+ sawnoff:{n:'Sawn-off Shotgun',sz:1,ty:'kinetic',kind:'proj',cost:280,lv:0,w:5,p:1,dmg:4,cd:.8,rng:130,spd:600,spr:.5,pellets:5,knock:50,shell:true,len:12},
+ drill:{n:'Power Drill',sz:1,ty:'kinetic',kind:'melee',cost:220,lv:0,w:8,p:1,dmg:7,cd:.2,reach:10,len:16},
+ zapper:{n:'Arc Zapper',sz:1,ty:'energy',kind:'tesla',cost:600,lv:1,w:6,p:4,dmg:8,cd:.8,rng:140,chain:2,stun:.1,len:11},
+ minilaser:{n:'Pocket Laser',sz:1,ty:'energy',kind:'beam',cost:650,lv:1,w:5,p:4,dmg:1.6,cd:.1,rng:220,len:14}
+});
