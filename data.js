@@ -47,8 +47,6 @@ const FRAMES={
   body:[[1.0,-.45],[1.0,.45],[.6,.95],[-.6,.95],[-1,.5],[-1,-.5],[-.6,-.95],[.6,-.95]],panels:[[[1.0,-.4],[1.12,-.2],[1.12,.2],[1.0,.4]],[[-.85,-.25],[-.5,-.25],[-.5,.25],[-.85,.25]]],vents:[[.1,-.85,.3,.12],[.1,.73,.3,.12]],lights:[[1.08,0]]},
  golem:{n:'Golem Siegebreaker',cost:2800,lv:3,hp:200,load:180,armor:3,r:23,spd:.86,turn:3.5,mounts:[['L',.22,0],['S',-.3,-.65],['S',-.3,.65]],util:3,desc:'Heavy siege platform with flank guns.',
   body:[[.95,-.6],[1.08,0],[.95,.6],[.5,.9],[-.3,1],[-.9,.75],[-1.05,0],[-.9,-.75],[-.3,-1],[.5,-.9]],panels:[[[-.85,-.35],[-.45,-.35],[-.45,.35],[-.85,.35]]],vents:[[-1,-.2,.12,.4],[.55,-.78,.25,.12],[.55,.66,.25,.12]],lights:[[1.0,-.3],[1.0,.3]]},
- scarab:{n:'Scarab Crawler',cost:450,lv:0,hp:120,load:100,armor:1,r:17,spd:.95,turn:5.5,mounts:[['S',.38,-.46],['S',.38,.46]],util:2,desc:'Cheap, sturdy shell with twin small guns.',
-  body:[[1.0,-.3],[1.0,.3],[.7,.8],[-.2,.95],[-.85,.75],[-1,.3],[-1,-.3],[-.85,-.75],[-.2,-.95],[.7,-.8]],panels:[[[-.1,-.5],[.55,-.38],[.55,.38],[-.1,.5]]],vents:[[-.9,-.15,.15,.3]],lights:[[.95,-.16],[.95,.16]]},
  raptor:{n:'Raptor Hunter',cost:2000,lv:2,hp:115,load:110,armor:1,r:17,spd:1.1,turn:7,mounts:[['M',.3,-.5],['M',.3,.5],['S',-.5,0]],util:2,desc:'Fast hunter with twin medium mounts.',
   body:[[1.25,0],[.7,-.45],[.45,-.92],[-.6,-.78],[-1,-.38],[-.85,0],[-1,.38],[-.6,.78],[.45,.92],[.7,.45]],panels:[[[1.0,0],[.5,-.2],[-.2,-.16],[-.2,.16],[.5,.2]]],vents:[[-.82,-.62,.2,.2],[-.82,.42,.2,.2]],lights:[[1.15,0]]},
  citadel:{n:'Citadel Fortress',cost:3600,lv:3,hp:250,load:230,armor:4,r:25,spd:.8,turn:3,mounts:[['L',.22,-.42],['L',.22,.42]],util:3,desc:'Twin heavy mounts. A rolling bunker.',
@@ -62,9 +60,7 @@ const DRIVES={
  treads:{n:'Tank Treads',cost:550,lv:0,speed:98,acc:4,turn:.75,load:45,knock:.6,haz:.2,desc:'Slow, hauls heavy loads, hard to shove.'},
  legs:{n:'Quad Walker',cost:800,lv:1,speed:110,acc:9,turn:1.4,load:25,knock:.35,haz:.5,desc:'Agile legs. Steps around slag.'},
  omni:{n:'Omni Rollers',cost:900,lv:1,speed:128,acc:7,turn:1.2,load:5,knock:.1,haz:0,omni:true,desc:'Strafes in any direction.'},
- hover:{n:'Hover Skirt',cost:1100,lv:2,speed:144,acc:3,turn:1.2,load:-10,knock:-.3,haz:1,desc:'Floats over slag. Slides around.'},
- spider:{n:'Hexapod Legs',cost:1400,lv:2,speed:116,acc:9,turn:1.5,load:40,knock:.45,haz:.7,desc:'Six legs. Agile and carries a lot.'},
- maglev:{n:'Mag-Lev Sled',cost:2200,lv:3,speed:165,acc:5,turn:1.3,load:10,knock:.1,haz:1,desc:'Fastest drive. Floats over hazards.'}
+ hover:{n:'Hover Skirt',cost:1100,lv:2,speed:144,acc:3,turn:1.2,load:-10,knock:-.3,haz:1,desc:'Floats over slag. Slides around.'}
 };
 const CORES={
  battery:{n:'Li-Ion Battery',cost:120,lv:0,pow:10,w:8,boom:0,desc:'10 power. Basic.'},
@@ -72,9 +68,7 @@ const CORES={
  capacitor:{n:'Supercapacitor Bank',cost:750,lv:1,pow:14,w:10,boom:0,burst:true,desc:'14 power. +50% fire rate for the first 8s.'},
  fusion:{n:'Fusion Core',cost:1300,lv:2,pow:24,w:18,boom:60,desc:'24 power. Small blast on death.'},
  reactor:{n:'Antimatter Reactor',cost:2600,lv:3,pow:34,w:22,boom:115,desc:'34 power. Huge blast on death.'},
- dynamo:{n:'Kinetic Dynamo',cost:600,lv:1,pow:13,w:6,boom:0,desc:'13 power. Very light.'},
- pcell:{n:'Plasma Cell',cost:1700,lv:2,pow:21,w:13,boom:0,desc:'21 power. Stable.'},
- quantum:{n:'Quantum Core',cost:3600,lv:3,pow:31,w:14,boom:0,desc:'31 power. Light and stable.'}
+ dynamo:{n:'Kinetic Dynamo',col:'#7fe0c0',cost:600,lv:1,pow:13,w:6,boom:0,desc:'13 power. Very light.'}
 };
 const ARMORS={
  steel:{n:'Steel Plating',cost:200,lv:0,ar:2,hp:.1,w:15,res:{},desc:'Heavy but solid.'},
@@ -83,9 +77,8 @@ const ARMORS={
  ceramic:{n:'Ceramic Tiles',cost:750,lv:1,ar:1,hp:.05,w:10,res:{energy:.3,thermal:.25},desc:'Beats lasers and fire.'},
  ablative:{n:'Ablative Shell',cost:950,lv:2,ar:1,hp:0,w:9,abl:70,res:{thermal:.3},desc:'Soaks the first 70 damage.'},
  titanium:{n:'Titanium Hull',cost:1600,lv:2,ar:4,hp:.18,w:12,res:{},desc:'High armor, light weight.'},
- mesh:{n:'Kevlar Mesh',cost:350,lv:0,ar:1,hp:.05,w:5,res:{kinetic:.1},desc:'Light, stops some bullets.'},
- mirror:{n:'Mirror Plating',cost:1400,lv:2,ar:2,hp:.05,w:10,res:{energy:.45},desc:'Reflects energy weapons.'},
- adaptive:{n:'Adaptive Nanoplate',cost:3900,lv:3,ar:4,hp:.2,w:11,res:{kinetic:.12,explosive:.12,energy:.12,thermal:.12},desc:'Light top armor. Resists everything.'},
+ mesh:{n:'Kevlar Mesh',col:'#5b6b3a',cost:350,lv:0,ar:1,hp:.05,w:5,res:{kinetic:.1},desc:'Light, stops some bullets.'},
+ adaptive:{n:'Adaptive Nanoplate',col:'#2f7f74',cost:3900,lv:3,ar:4,hp:.2,w:11,res:{kinetic:.12,explosive:.12,energy:.12,thermal:.12},desc:'Light top armor. Resists everything.'},
  neutronium:{n:'Neutronium Lattice',cost:3200,lv:3,ar:5,hp:.25,w:16,res:{kinetic:.1,explosive:.15,energy:.1},desc:'The best money can buy.'}
 };
 const WEAPONS={
@@ -94,8 +87,6 @@ const WEAPONS={
  spike:{n:'Ram Spike',sz:1,ty:'kinetic',kind:'melee',cost:150,lv:0,w:7,p:0,dmg:12,cd:.5,reach:9,len:16},
  needle:{n:'Needle Rifle',sz:1,ty:'kinetic',kind:'proj',cost:550,lv:1,w:5,p:2,dmg:7,cd:.32,rng:390,spd:1000,spr:.02,pierce:.5,len:19},
  microm:{n:'Micro-Missile Pod',sz:1,ty:'explosive',kind:'missile',cost:500,lv:1,w:8,p:2,dmg:8,cd:1.2,rng:360,spd:330,splash:30,homing:3.2,salvo:2,len:11},
- smg:{n:'Burst SMG',sz:1,ty:'kinetic',kind:'proj',cost:350,lv:0,w:5,p:2,dmg:2.4,cd:.075,rng:220,spd:760,spr:.2,shell:true,len:14},
- sawnoff:{n:'Sawn-off',sz:1,ty:'kinetic',kind:'proj',cost:400,lv:1,w:6,p:1,dmg:4.5,cd:.9,rng:140,spd:620,spr:.5,pellets:5,knock:50,shell:true,len:13},
  dart:{n:'Shock Dart',sz:1,ty:'energy',kind:'proj',cost:600,lv:1,w:4,p:3,dmg:6,cd:.6,rng:320,spd:720,spr:.03,shock:.2,len:15},
  claw:{n:'Hydraulic Claw',sz:1,ty:'kinetic',kind:'melee',cost:500,lv:1,w:9,p:1,dmg:18,cd:.7,reach:10,stunT:.25,len:15},
  torch:{n:'Plasma Torch',sz:1,ty:'thermal',kind:'flame',cost:380,lv:1,w:6,p:3,dmg:1.1,cd:.05,rng:95,spd:260,spr:.3,len:12},
@@ -110,7 +101,6 @@ const WEAPONS={
  flak:{n:'Flak Cannon',sz:2,ty:'explosive',kind:'proj',cost:1000,lv:1,w:13,p:3,dmg:7,cd:.9,rng:300,spd:600,spr:.25,pellets:3,splash:26,len:20},
  cryo:{n:'Cryo Projector',sz:2,ty:'energy',kind:'proj',cost:1100,lv:2,w:11,p:5,dmg:5,cd:.25,rng:260,spd:560,spr:.1,slow:.55,len:19},
  gauss:{n:'Gauss Rifle',sz:2,ty:'kinetic',kind:'rail',cost:1500,lv:2,w:14,p:6,dmg:28,cd:1.5,charge:.3,rng:560,len:28},
- drill:{n:'Drill Ram',sz:2,ty:'kinetic',kind:'melee',cost:800,lv:1,w:14,p:2,dmg:9,cd:.16,reach:12,pierce:.6,len:21},
  saw:{n:'Buzzsaw',sz:2,ty:'kinetic',kind:'melee',cost:450,lv:0,w:12,p:2,dmg:15,cd:.32,reach:13,len:20},
  rail:{n:'Railgun',sz:3,ty:'kinetic',kind:'rail',cost:2100,lv:2,w:22,p:10,dmg:55,cd:2.6,charge:.5,rng:700,len:36},
  cannon:{n:'Heavy Cannon',sz:3,ty:'explosive',kind:'proj',cost:1600,lv:1,w:28,p:5,dmg:40,cd:2.0,rng:480,spd:560,spr:.03,splash:45,knock:160,len:32},
@@ -151,9 +141,7 @@ const UTILS={
 const CHIPS={
  basic:{n:'Basic Logic Board',cost:100,lv:0,react:.9,aim:1,lead:.55,desc:'Slow reactions.'},
  tactical:{n:'Tactical Processor',cost:700,lv:1,react:.55,aim:1.3,lead:.85,desc:'Faster aim, better leading.'},
- hunter:{n:'Hunter-Seeker Board',cost:450,lv:1,react:.7,aim:1.15,lead:.95,desc:'Cheap, leads targets well.'},
- neural:{n:'Combat Neural Net',cost:1800,lv:2,react:.3,aim:1.6,lead:1,dodge:true,desc:'Elite aim. Dodges missiles.'},
- quantum:{n:'Quantum Mind',cost:3600,lv:3,react:.18,aim:1.95,lead:1,dodge:true,desc:'Near-instant reactions.'}
+ neural:{n:'Combat Neural Net',cost:1800,lv:2,react:.3,aim:1.6,lead:1,dodge:true,desc:'Elite aim. Dodges missiles.'}
 };
 const CATS={frame:FRAMES,drive:DRIVES,core:CORES,armor:ARMORS,weapon:WEAPONS,util:UTILS,chip:CHIPS};
 const CATNAME={frame:'Frame',drive:'Drive',core:'Power Core',armor:'Armor',weapon:'Weapon',util:'Utility',chip:'AI Chip'};
@@ -267,3 +255,51 @@ const BOUNTIES={
  dominant:{n:'Dominant',d:'Win with every surviving bot above 50% HP.'}
 };
 function rankIdx(rep){let i=0;RANKS.forEach((r,k)=>{if(rep>=r[0])i=k});return i}
+
+// ================= v7: expanded parts catalog =================
+Object.assign(FRAMES,{
+ scarab:{n:'Scarab Crawler',cost:500,lv:0,hp:120,load:95,armor:2,r:16,spd:.95,turn:5.5,mounts:[['S',.45,-.5],['S',.45,.5]],util:2,desc:'Cheap, armored and steady.',
+  body:[[.95,-.35],[1.05,0],[.95,.35],[.6,.88],[-.5,.92],[-.95,.55],[-1,0],[-.95,-.55],[-.5,-.92],[.6,-.88]],panels:[[[-.75,-.42],[.15,-.42],[.15,.42],[-.75,.42]]],vents:[[-.95,-.2,.14,.4]],lights:[[1.0,-.15],[1.0,.15]]},
+ warlord:{n:'Warlord Dreadnought',cost:4300,lv:3,hp:235,load:245,armor:3,r:26,spd:.78,turn:2.8,mounts:[['L',.28,0],['M',-.38,-.62],['M',-.38,.62]],util:2,desc:'Huge command platform.',
+  body:[[1.1,-.3],[1.1,.3],[.85,.85],[.2,1],[-.7,.95],[-1.05,.55],[-1.05,-.55],[-.7,-.95],[.2,-1],[.85,-.85]],panels:[[[.9,-.22],[1.08,-.22],[1.08,.22],[.9,.22]],[[-.98,-.3],[-.62,-.3],[-.62,.3],[-.98,.3]]],vents:[[.3,-.9,.35,.12],[.3,.78,.35,.12]],lights:[[1.08,-.45],[1.08,.45]]}
+});
+Object.assign(DRIVES,{
+ lighttracks:{n:'Light Tracks',cost:300,lv:0,speed:122,acc:5,turn:.9,load:25,knock:.4,haz:.1,art:'treads'},
+ racing:{n:'Racing Slicks',cost:650,lv:1,speed:174,acc:4,turn:.85,load:-5,knock:-.1,haz:0,art:'wheels'},
+ gyroball:{n:'Gyro Sphere',cost:1000,lv:2,speed:162,acc:8,turn:1.6,load:-15,knock:-.2,haz:.2,art:'ball'},
+ hexapod:{n:'Hexapod Legs',cost:1300,lv:2,speed:102,acc:9,turn:1.5,load:40,knock:.45,haz:.6,art:'legs6'},
+ maglev:{n:'Mag-Lev Pads',cost:2300,lv:3,speed:156,acc:6,turn:1.3,load:10,knock:0,haz:1,omni:true,hover:true,art:'maglev'}
+});
+DRIVES.hover.hover=true;
+Object.assign(CORES,{
+ solar:{n:'Solar Cell Array',cost:80,lv:0,pow:8,w:4,boom:0,col:'#ffe066'},
+ diesel:{n:'Diesel Generator',cost:260,lv:0,pow:13,w:17,boom:0,col:'#c08040'},
+ twin:{n:'Twin Battery Pack',cost:620,lv:1,pow:18,w:15,boom:0,col:'#7dffb0'},
+ plasma:{n:'Plasma Cell',cost:1050,lv:2,pow:21,w:13,boom:30,col:'#ff6ad5'},
+ quantum:{n:'Quantum Cell',cost:2000,lv:3,pow:28,w:12,boom:0,col:'#7fe0ff'},
+ singularity:{n:'Singularity Core',cost:3600,lv:3,pow:42,w:30,boom:140,col:'#a070ff'}
+});
+Object.assign(ARMORS,{
+ scrap:{n:'Scrap Plating',cost:90,lv:0,ar:1,hp:.05,w:9,res:{},col:'#7a6a55'},
+ aluminum:{n:'Aluminum Panels',cost:320,lv:0,ar:1,hp:.08,w:5,res:{},col:'#c8ccd0'},
+ spaced:{n:'Spaced Armor',cost:800,lv:1,ar:2,hp:.05,w:11,res:{explosive:.2,kinetic:.1},col:'#6a7060'},
+ mirror:{n:'Reflective Coating',cost:1100,lv:2,ar:1,hp:.05,w:6,res:{energy:.45},col:'#e0f0ff'},
+ nano:{n:'Nanoweave Skin',cost:2400,lv:3,ar:3,hp:.12,w:8,res:{thermal:.2,energy:.1},col:'#3a4a5a'}
+});
+Object.assign(CHIPS,{
+ salvaged:{n:'Salvaged Processor',cost:40,lv:0,react:1.1,aim:.9,lead:.45,col:'#c0a070'},
+ veteran:{n:'Veteran Instinct Chip',cost:320,lv:0,react:.75,aim:1.1,lead:.65,col:'#ffb020'},
+ hunter:{n:'Hunter-Killer Module',cost:650,lv:1,react:.6,aim:1.2,lead:.95,col:'#ff6a5a'},
+ reflex:{n:'Reflex Booster',cost:800,lv:1,react:.4,aim:1.15,lead:.7,col:'#ffe066'},
+ marksman:{n:'Marksman AI',cost:950,lv:1,react:.7,aim:1.45,lead:.9,col:'#7fe0ff'},
+ swarm:{n:'Swarm Link',cost:1300,lv:2,react:.45,aim:1.3,lead:.85,col:'#7dffb0'},
+ predictive:{n:'Predictive Core',cost:1500,lv:2,react:.5,aim:1.4,lead:1,col:'#b07cff'},
+ quantummind:{n:'Quantum Mind',cost:2800,lv:3,react:.25,aim:1.8,lead:1,dodge:true,col:'#ff7bd8'}
+});
+Object.assign(WEAPONS,{
+ smg:{n:'Submachine Gun',sz:1,ty:'kinetic',kind:'proj',cost:250,lv:0,w:5,p:2,dmg:2.4,cd:.07,rng:200,spd:720,spr:.2,shell:true,len:13},
+ sawnoff:{n:'Sawn-off Shotgun',sz:1,ty:'kinetic',kind:'proj',cost:280,lv:0,w:5,p:1,dmg:4,cd:.8,rng:130,spd:600,spr:.5,pellets:5,knock:50,shell:true,len:12},
+ drill:{n:'Power Drill',sz:1,ty:'kinetic',kind:'melee',cost:220,lv:0,w:8,p:1,dmg:7,cd:.2,reach:10,len:16},
+ zapper:{n:'Arc Zapper',sz:1,ty:'energy',kind:'tesla',cost:600,lv:1,w:6,p:4,dmg:8,cd:.8,rng:140,chain:2,stun:.1,len:11},
+ minilaser:{n:'Pocket Laser',sz:1,ty:'energy',kind:'beam',cost:650,lv:1,w:5,p:4,dmg:1.6,cd:.1,rng:220,len:14}
+});

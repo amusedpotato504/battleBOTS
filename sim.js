@@ -21,7 +21,7 @@ function startBattle(cfg){
  if(mods.has('minefield'))for(let k=0,n=0;k<200&&n<16;k++){const x=rnd(G.W*.15,G.W*.85),y=rnd(G.H*.12,G.H*.88);if(wallAt(x,y,20)||onHazard(x,y,20)||G.bots.some(b=>Math.hypot(b.x-x,b.y-y)<130))continue;G.mines.push({x,y,team:-1,src:null,arm:0,t:rnd(0,3),neutral:1});n++}
  if(mods.has('supply'))G.pickT=4;G.decals=mkCanvas(W*FS,H*FS);
  $('#tnP').textContent=S.team;$('#tnE').textContent=cfg.eTeam;
- resize();setSpeed(1);G.paused=false;$('#pauseBtn').textContent='❚❚';$('#feed').innerHTML='';$('#inspect').style.display='none';
+ resize();setSpeed(1);G.paused=false;$('#camBtn').classList.add('on');$('#pauseBtn').textContent='❚❚';$('#feed').innerHTML='';$('#inspect').style.display='none';
  showBanner(cfg.title||'FIGHT','#ffb020');sfx('horn');setTimeout(()=>{if(G)announce(M.n,'#c3ccd7')},600);if(mods.size)setTimeout(()=>{for(const m of mods)announce(MODIFIERS[m].i+' '+MODIFIERS[m].n,'#c9a7ff')},900);G.gen=++loopGen;requestAnimationFrame(loop);
 }
 function endBattle(){G=null}

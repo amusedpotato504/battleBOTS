@@ -101,9 +101,10 @@ let hudTick=0;
 function hud(){const p=teamPct(0),e=teamPct(1);$('#pHp').style.width=p*100+'%';$('#eHp').style.width=e*100+'%';
  const cnt=t=>G.bots.filter(b=>b.team===t&&!b.dead).length+'/'+G.bots.filter(b=>b.team===t).length;$('#pCnt').textContent=cnt(0);$('#eCnt').textContent=cnt(1);
  const tt=Math.floor(G.t);$('#clock').innerHTML=`${(tt/60)|0}:${String(tt%60).padStart(2,'0')}`+(G.t>=G.stormStart?'<small>BARRIER</small>':G.t>G.stormStart-15?`<small>BARRIER ${G.stormStart-tt}s</small>`:'');
- const b=G.sel,ins=$('#inspect');if(!b){ins.style.display='none';return}const rk=rankOf(b.rep),pct=Math.max(0,b.hp/b.maxHp);ins.style.display='block';
- ins.innerHTML=`<div class="ih"><b style="color:${tc(b)}">${esc(b.name)}</b><span style="color:${rk[2]}">${rk[1]}</span></div><div class="bar"><i style="width:${pct*100}%;background:${tc(b)}"></i></div>
- <div class="ln">${b.dead?'<span style="color:var(--red)">Destroyed</span>':esc(b.stun>0?'Stunned':b.cloak>0?'Cloaked':b.slow>0?'Frozen':b.onIce?'Sliding on ice':b.mode||'')}</div><div class="ln mono">${Math.round(b.st.dmg)} dmg · ${b.st.kills.length} KO</div>`}
+ const b=G.sel,ins=$('#inspect');if(!b){ins.style.display='none';return}const rk=rankOf(b.rep);ins.style.display='block';
+ ins.innerHTML=`<b style="color:${tc(b)}">${esc(b.name)}</b> <span style="color:${rk[2]}">${rk[1]}</span>${b.dead?' <span style="color:var(--red)">· destroyed</span>':''}
+ <div class="ln">${FRAMES[b.o.fk].n} · ${DRIVES[b.o.dk]?.n||''}</div><div class="ln">${b.weps.map(w=>WEAPONS[w.k].n).join(', ')}</div><div class="ln">${BEHAVIORS[b.ai.beh].n} · ${TARGETS[b.ai.tgt].n}</div>
+ <div class="mono" style="margin-top:3px">HP ${Math.max(0,Math.round(b.hp))}/${Math.round(b.maxHp)}${b.shieldMax?' · SH '+Math.round(b.shield):''} · ARM ${Math.round(b.o.arPct*100)}%</div><div class="mono">DMG ${Math.round(b.st.dmg)} · KO ${b.st.kills.length}</div>${b.dead?'':`<div style="color:var(--amber)">${esc(b.stun>0?'Stunned!':b.cloak>0?'Cloaked':b.slow>0?'Frozen':b.onIce?'Sliding on ice':b.mode||'')}</div>`}`}
 function loop(now){if(!G||G.gen!==loopGen||!$('#battle').classList.contains('on'))return;
  const real=Math.min(.05,(now-G.last)/1000);G.last=now;
  if(G.kc){G.kc.t-=real;if(G.kc.t<=0)G.kc=null}if(G.kcCd>0)G.kcCd-=real*G.speed;
@@ -112,8 +113,9 @@ function loop(now){if(!G||G.gen!==loopGen||!$('#battle').classList.contains('on'
  if(G.over&&G.overT>2.2&&!G.shown){G.shown=true;G.cfg.onEnd(G)}
  requestAnimationFrame(loop)}
 function showBanner(txt,col){const b=$('#banner');b.textContent=txt;b.style.color=col;b.style.opacity=1;clearTimeout(b._t);b._t=setTimeout(()=>b.style.opacity=0,1400)}
-function setSpeed(s){G.speed=s;$('#spdBtn').textContent=s+'×'}
-$('#spdBtn').onclick=()=>{if(G)setSpeed(G.speed===1?2:G.speed===2?4:1)};
+function setSpeed(s){G.speed=s;$$('[data-sp]').forEach(b=>b.classList.toggle('on',+b.dataset.sp===s))}
+$$('[data-sp]').forEach(b=>b.onclick=()=>setSpeed(+b.dataset.sp));
+$('#camBtn').onclick=()=>{if(!G)return;G.camAuto=!G.camAuto;$('#camBtn').classList.toggle('on',G.camAuto)};
 $('#pauseBtn').onclick=()=>{G.paused=!G.paused;$('#pauseBtn').textContent=G.paused?'▶':'❚❚';G.last=performance.now()};
 $('#quitBtn').onclick=()=>confirmBox('Forfeit match?','Leaving now counts as a loss and you still pay repairs.','Forfeit',()=>{if(!G)return;G.over=true;G.winner=1;G.forfeit=true;G.shown=true;G.cfg.onEnd(G)});
 cv.addEventListener('pointerdown',e=>{if(!G)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left-view.ox)/view.s,y=(e.clientY-r.top-view.oy)/view.s;let best=null,bd=45;for(const b of G.bots){const d=Math.hypot(b.x-x,b.y-y)-(b.dead?20:0);if(d<bd){bd=d;best=b}}G.sel=best;hud()});
