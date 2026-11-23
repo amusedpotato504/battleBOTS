@@ -218,7 +218,7 @@ const MAPS={
 
 // ================= career data =================
 const LEAGUES=[
- {n:'Scrap League',sq:2,bud:4000,purse:650,repMul:1,tw:[.7,.3,0,0],lv:0,rep:[5,45],teams:['Rustbucket Raiders','Junkyard Dogs','Bolt Brothers','Spare Parts Co.'],champ:'The Scrap King'},
+ {n:'Scrap League',sq:2,bud:2400,purse:650,repMul:1,tw:[.7,.3,0,0],lv:0,rep:[5,45],teams:['Rustbucket Raiders','Junkyard Dogs','Bolt Brothers','Spare Parts Co.'],champ:'The Scrap King'},
  {n:'Steel Circuit',sq:3,bud:10500,purse:1350,repMul:1.3,tw:[.6,.35,.05,0],lv:1,rep:[60,220],teams:['Chrome Syndicate','Voltage Vandals','Gearhead Gang','Piston Union'],champ:'Steel Tyrants'},
  {n:'Iron Majors',sq:3,bud:20500,purse:2500,repMul:1.6,tw:[.5,.38,.12,0],lv:2,rep:[200,480],teams:['Iron Legion','Thunder Works','Red Dynamo','Blackforge'],champ:'Ironclad Dynasty'},
  {n:'Titan Series',sq:4,bud:38000,purse:4500,repMul:2,tw:[.3,.42,.23,.05],lv:3,rep:[420,950],teams:['Titan Forge','Neon Reapers','Omega Labs','Atlas Heavy'],champ:'Colossus Corp'},

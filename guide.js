@@ -90,9 +90,9 @@ function openHelp(topic){const b=openSheet(`<div class="sheet-h"><h3 class="grow
 // ---------- first-run tour ----------
 const TUT=[
  ['Welcome to Bot Arena','You manage a robot fighting team. Your bots fight on their own. You win by building them well and choosing smart tactics.','⚙'],
- ['Your starter bots','You start with two bots, <b>Rook</b> and <b>Sparrow</b>, and ¢1,500. Open the <b>Garage</b> tab to see them. Tap a bot to change its parts, tactics and paint.','🔧'],
+ ['Build your first bot',`You start with an empty garage and ¢${fmt(STARTING_CREDITS)}. In the <b>Garage</b>, tap <b>+ New bot</b>, then tap each slot to buy a part. That's enough for one well-armed bot or two basic ones.`,'🔧'],
  [`Hardpoints: ${szBadge('S')}${szBadge('M')}${szBadge('L')}`,'Weapons fit mounts of the <b>same size or bigger</b>. A medium mount takes S or M weapons. The size badge is on every weapon.','⬡'],
- ['Fight and earn','On the <b>Career</b> tab, tap <b>Prepare</b> to scout the enemy, pick your squad and start. The first match is easy. Later ones need upgrades, so spend your winnings on better parts.','⚑'],
+ ['Fight and earn','On the <b>Career</b> tab, tap <b>Prepare</b> to scout the enemy, pick your squad and start. A bot needs a frame, drive, power core, AI chip and a weapon to fight. Later ones need upgrades, so spend your winnings on better parts.','⚑'],
  ['Need help?','The <b>☰</b> menu at the top has a short guide to every system. The builder also tells you what each bot needs.','?']];
 function showTutorial(i=0){if(i>=TUT.length){S.tut=1;persist();closeDlg();return}const [t,d,ic]=TUT[i];
  openSheet(`<div class="tut"><div class="tut-ic">${ic}</div><h3>${t}</h3><p>${d}</p><div class="dots">${TUT.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
@@ -100,6 +100,7 @@ function showTutorial(i=0){if(i>=TUT.length){S.tut=1;persist();closeDlg();return
  $('#tutNext').onclick=()=>showTutorial(i+1);$('#tutSkip').onclick=()=>showTutorial(TUT.length)}
 // ---------- what to do next ----------
 function nextSteps(){const out=[];
+ if(!S.bots.length)return [['🔧','Build your first bot to start your career','Garage','garage']];
  const notReady=S.bots.filter(b=>!compute(b).ok);
  const pp=S.bots.filter(b=>perkPts(b)>0);
  if(notReady.length)out.push(['⚠',`${notReady.map(b=>esc(b.name)).join(', ')} ${notReady.length>1?'are':'is'} not battle-ready`,'Fix in Garage','garage']);

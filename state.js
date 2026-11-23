@@ -28,17 +28,10 @@ function partName(p){return (p.t>1?TIERS[p.t].mk+' ':'')+baseOf(p).n}
 function affixText(p){return Object.entries(p.af).map(([k,v])=>{const a=AFFIX[k];return a.f.replace('{p}',Math.round(v*100)).replace('{v}',v)})}
 function affixNames(p){return Object.keys(p.af).map(k=>AFFIX[k].n)}
 
+// enough for one well-equipped bot (~¢1,700-2,300) or two bare-bones ones (~¢820 each)
+const STARTING_CREDITS=2500;
 function newCareer(team){
- S={v:2,nemesis:{},stats:{bounties:0,wagerNet:0,revenge:0},team:team||'Garage Rats',credits:1500,nid:1,inv:{},bots:[],retired:[],league:0,ladder:0,unlocked:0,trophies:[],rivals:{},market:[],log:[],matches:0,crowned:0,nbid:1};
- const add=(c,k,t=1)=>{const p=newPart(c,k,t);S.inv[p.id]=p;return p.id};
- const b1=mkBot('Rook',{p:'#d9831f',s:'#1f2328',fin:'weathered',num:7});
- Object.assign(b1,{frame:add('frame','jackal'),drive:add('drive','wheels'),core:add('core','battery'),armor:add('armor','steel'),chip:add('chip','basic')});
- b1.weps=[add('weapon','shotgun'),add('weapon','lmg')];b1.utils=[add('util','booster'),null];b1.ai={beh:'aggro',tgt:'near',eng:1,ret:.2};
- const b2=mkBot('Sparrow',{p:'#2a5fa8',s:'#e8e2d0',fin:'factory',num:12});
- Object.assign(b2,{frame:add('frame','wasp'),drive:add('drive','wheels'),core:add('core','battery'),armor:null,chip:add('chip','basic')});
- b2.weps=[add('weapon','pulse')];b2.utils=[null];b2.ai={beh:'flank',tgt:'weak',eng:1,ret:.25};
- [b1,b2].forEach(b=>{S.bots.push(b);syncEquip()});
- add('weapon','lmg');add('drive','wheels');add('core','battery');
+ S={v:2,nemesis:{},stats:{bounties:0,wagerNet:0,revenge:0},team:team||'Garage Rats',credits:STARTING_CREDITS,nid:1,inv:{},bots:[],retired:[],league:0,ladder:0,unlocked:0,trophies:[],rivals:{},market:[],log:[],matches:0,crowned:0,nbid:1};
  genRivals();refreshMarket();persist();
 }
 function mkBot(name,paint){return {id:'b'+(S.nbid++),perks:[],name,frame:null,drive:null,core:null,armor:null,chip:null,weps:[],utils:[],paint,ai:{beh:'aggro',tgt:'near',eng:1,ret:.2},rep:0,st:{m:0,w:0,k:0,d:0,dmg:0,mvp:0,streak:0,best:0},titles:[],hist:[],born:S.matches}}

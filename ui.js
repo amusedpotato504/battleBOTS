@@ -45,7 +45,7 @@ function renderCareer(){
   <div class="vs"><span class="dim">vs</span> <b>${esc(opp)}</b> ${rankHtml(avg)}</div>
   <div class="dim small">Win ¢${fmt(purse)} · ${L.sq} bots per side</div>
   <button class="btn primary big" id="prepBtn" ${ready?'':'disabled'}>Prepare match</button>
-  ${ready?'<button class="link" id="exhBtn">Exhibition match · half pay</button>':'<div class="warnline" style="margin-top:10px">No bot is battle-ready yet. Fix one in the Garage.</div>'}
+  ${ready?'<button class="link" id="exhBtn">Exhibition match · half pay</button>':`<div class="warnline" style="margin-top:10px">${S.bots.length?'No bot is battle-ready yet. Fix one in the Garage.':'You have no bots yet. Build one in the Garage.'}</div>`}
  </div>`;
  $$('#careerBody [data-go]').forEach(b=>b.onclick=()=>{if(b.dataset.go==='shop')SHOPTAB=b.textContent.includes('unused')?'mine':'market';show(b.dataset.go)});
  $('#prepBtn').onclick=()=>prepMatch(false);if($('#exhBtn'))$('#exhBtn').onclick=()=>prepMatch(true);
@@ -143,7 +143,7 @@ function renderGarage(){
  <div class="bots" style="margin-top:12px">${S.bots.map(b=>{const o=compute(b),pp=perkPts(b);return `<button class="card bot" data-id="${b.id}"><canvas data-b="${b.id}"></canvas><div class="grow">
   <div class="nm">${esc(b.name)}</div><div>${rankHtml(b.rep)}${pp?` <span class="dotn" title="Perk points">${pp}</span>`:''}</div>
   ${o.ok?`<div class="ln">${statLine(o)}</div>`:`<div class="warnline">${esc(o.warn[0])}</div>`}</div><span class="dim">›</span></button>`}).join('')}
- ${S.bots.length<8?'<button class="card bot add" id="newBot">+ New bot</button>':''}</div>`;
+ ${S.bots.length<8?'<button class="card bot add" id="newBot">+ New bot</button>':''}</div>${S.bots.length?'':`<div class="small dim" style="margin-top:10px">A bot needs a frame, drive, power core, AI chip and at least one weapon. The cheapest working bot costs about ¢820.</div>`}`;
  $('#testBtn').onclick=openTestRange;
  $$('#garageBody .bot[data-id]').forEach(el=>el.onclick=()=>openBuilder(el.dataset.id));
  if($('#newBot'))$('#newBot').onclick=()=>{const used=new Set(S.bots.map(b=>b.name));const nm=pick(['Talon','Bastion','Comet','Wrench','Pike','Halo','Nova','Gizmo','Atlas','Echo','Blitz','Rook II','Ferrum','Hammerhead','Ratchet','Sprocket','Tycho','Volt'].filter(n=>!used.has(n)))||'Unit';
