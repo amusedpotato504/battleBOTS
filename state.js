@@ -1,11 +1,16 @@
 'use strict';
 // ================= save state =================
-const SAVE_KEY='botarena_career_v4';
-// v4 starts fresh: remove saves from older versions
-try{['botarena_career_v2','botarena_v1'].forEach(k=>localStorage.removeItem(k))}catch(e){}
+// ---- save slots ----
+const SLOTS=3;let ACTIVE=1;
+const slotKey=n=>'botarena_slot_'+n;
+try{['botarena_career_v2','botarena_v1'].forEach(k=>localStorage.removeItem(k));
+ // move the single save from the previous version into slot 1
+ const old=localStorage.getItem('botarena_career_v4');if(old){if(!localStorage.getItem(slotKey(1)))localStorage.setItem(slotKey(1),old);localStorage.removeItem('botarena_career_v4')}
+ const a=+localStorage.getItem('botarena_active');if(a>=1&&a<=SLOTS)ACTIVE=a}catch(e){}
 let S=null;
-function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
-function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(s&&s.v===2)return migrate(s)}catch(e){}return null}
+function persist(){if(!S)return;S.saved=Date.now();try{localStorage.setItem(slotKey(ACTIVE),JSON.stringify(S));localStorage.setItem('botarena_active',ACTIVE)}catch(e){}}
+function readSlot(n){try{const s=JSON.parse(localStorage.getItem(slotKey(n))||'null');if(s&&s.v===2&&s.bots)return migrate(s)}catch(e){}return null}
+function deleteSlot(n){try{localStorage.removeItem(slotKey(n))}catch(e){}}
 function migrate(s){s.nemesis=s.nemesis||{};s.stats=s.stats||{bounties:0,wagerNet:0,revenge:0};for(const b of s.bots){b.perks=b.perks||[];b.hist=b.hist||[]}for(const t of Object.values(s.rivals||{}))for(const b of t.bots)b.st=b.st||{m:0,w:0,k:0,d:0,dmg:0,mvp:0,streak:0,best:0};return s}
 function perkPts(b){return rankIdx(b.rep)-(b.perks||[]).length}
 function upgradeCost(p){if(p.t>=4)return 0;return Math.round(baseOf(p).cost*(TIERS[p.t+1].price-TIERS[p.t].price)*1.1/10)*10}

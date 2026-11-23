@@ -14,6 +14,16 @@ const PDESC={
  weapon:{lmg:'A fast stream of light bullets. A good all-rounder.',pulse:'Accurate energy shots at medium range.',spike:'A ram on the front. Hits whatever the bot drives into.',needle:'Long-range rifle. Its shots ignore half of the target\'s armor.',microm:'Fires two small homing missiles at a time.',torch:'Tiny flamethrower. Very short range, sets targets on fire.',minigun:'Starts slow, then spins up into a hail of bullets.',shotgun:'Fires 7 pellets at once. Devastating up close and pushes targets back.',autocannon:'Heavy shells with strong damage at medium to long range.',laser:'A beam that hits instantly. Never misses a target it can see.',rockets:'A homing rocket that explodes, hurting everything nearby.',grenade:'Lobs grenades over walls. They explode in an area.',flamer:'Short-range cone of fire that sets bots ablaze.',tesla:'Lightning that jumps between up to 3 nearby enemies and can stun them.',saw:'Spinning blade for close combat. Steady damage up close.',rail:'Charges up, then fires a shot that goes through bots and ignores armor.',cannon:'Huge explosive shell. Big damage and knockback, slow to reload.',missiles:'Fires a salvo of 6 homing missiles.',mortar:'Long-range artillery that fires over walls. Cannot hit targets that are very close.',lance:'Heavy plasma beam that can set targets on fire.',hammer:'Massive melee strike that knocks targets back and stuns them.',inferno:'Huge flamethrower with a wide cone.'},
  util:{shield:'A 50-point energy shield. Recharges when the bot avoids damage for a few seconds.',repair:'Repairs the bot during battle, 4 health every second.',booster:'Short bursts of speed to charge in or escape.',plating:'Adds 25% more health, but is heavy.',gyro:'Less knockback and steadier aim.',spikes:'Melee attackers take half their own damage back.',mines:'Drops proximity mines behind the bot, up to 3 at once.',overclock:'Weapons fire 25% faster. Uses a lot of power.',cooling:'Weapons fire 15% faster, and the bot cannot be set on fire.',targeting:'Weapons reach 15% farther and are more accurate.',flares:'Each homing missile aimed at this bot has a 45% chance to be thrown off.',decoy:'Nearby enemies focus their fire on this bot. Best on tough bots.',emp:'Every 9 seconds, stuns nearby enemies and drains their shields.',gundrone:'A small drone circles the bot and shoots at its target.',medidrone:'A drone that repairs whichever teammate is most damaged.',stealth:'Turns nearly invisible for 3 seconds out of every 10.'},
  chip:{basic:'Slow to react and aim. Fine for starting out.',tactical:'Reacts faster and leads moving targets better.',neural:'Top-tier reflexes and aim. Dodges incoming missiles.'}};
+// one-line summary used in compact lists
+function partBrief(p){const B=baseOf(p),m=TIERS[p.t].mul,a=p.af||{};
+ switch(p.c){
+  case 'frame':return `${Math.round(B.hp*m*2.2)} HP · carries ${B.load} · ${B.mounts.map(x=>szBadge(x[0])).join('')} · ${B.util} bay${B.util>1?'s':''}`;
+  case 'drive':return `Speed ${Math.round(B.speed*(1+(m-1)*.5))} · carry ${B.load>0?'+'+B.load:B.load<0?B.load:'+0'} · ${turnWord(B.turn)} turns`;
+  case 'core':return `Supplies ${Math.round(B.pow*m*10)/10} power · weight ${B.w}${B.boom?' · explodes':''}`;
+  case 'armor':return `Blocks ${Math.round(B.ar*m)*5}% · ${B.hp?'+'+Math.round(B.hp*m*100)+'% HP · ':''}weight ${B.w}`;
+  case 'weapon':{const d=B.dmg*m*(1+(a.dmg||0)),rate=1/B.cd*(1+(a.rate||0)),dps=B.kind==='rail'?d/(B.cd+B.charge):d*(B.pellets||1)*(B.salvo||1)*rate,rg=Math.round(B.rng*(1+(a.range||0)));return `${szBadge(B.sz)} ~${Math.round(dps)} dmg/s · ${B.kind==='melee'?'melee':rangeWord(rg)+' range'} · wt ${B.w}`}
+  default:return PDESC[p.c][p.k];
+ }}
 function rangeWord(r){return r<=200?'short':r<=400?'medium':'long'}
 function turnWord(x){return x<.9?'slow':x<1.15?'normal':x<1.3?'quick':'very quick'}
 const kv=(k,v)=>`<div><span>${k}</span><b>${v}</b></div>`;
@@ -72,9 +82,6 @@ const HELP=[
  ['☾','Match conditions',`<p>Many matches roll a special condition, shown before the match:</p><ul>${Object.values(MODIFIERS).map(m=>`<li><b>${m.i} ${m.n}</b>: ${m.d}</li>`).join('')}</ul><p>In every match, <b>repair kits</b> spawn mid-arena, <b>slag pits</b> burn bots without hover drives, and a closing <b>barrier</b> starts at 60 seconds.</p>`],
  ['⌖','Test range',`<p>In the Garage, the <b>Test range</b> lets you try any bot for free against a target dummy (a 30-second damage test), a league sparring partner or one of your own bots. Use it to check a new build before a real match.</p>`]
 ];
-function openHelp(topic){const b=openSheet(`<div class="sheet-h"><h3 class="grow">How to play</h3><button class="btn small ghost" onclick="closeSheet()">✕</button></div>
- ${HELP.map(([i,t,h],k)=>`<details class="help-d" ${topic===k?'open':''}><summary><span class="hi">${i}</span>${t}</summary><div class="help">${h}</div></details>`).join('')}
- <button class="btn small" style="margin-top:12px" id="replayTut">Replay intro tour</button>`);$('#replayTut').onclick=()=>{closeSheet();showTutorial(0)}}
 // ---------- first-run tour ----------
 const TUT=[
  ['Welcome to Bot Arena','You manage a robot fighting team. Your bots fight on their own. You win by building them well and choosing smart tactics.','⚙'],
@@ -84,7 +91,7 @@ const TUT=[
  ['Need help?','The <b>?</b> button at the top opens a short guide to every system. The builder also tells you what each bot needs.','?']];
 function showTutorial(i=0){if(i>=TUT.length){S.tut=1;persist();closeDlg();return}const [t,d,ic]=TUT[i];
  openSheet(`<div class="tut"><div class="tut-ic">${ic}</div><h3>${t}</h3><p>${d}</p><div class="dots">${TUT.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
- <div class="row"><button class="btn ghost grow" id="tutSkip">${i<TUT.length-1?'Skip':''}</button><button class="btn primary grow" id="tutNext">${i<TUT.length-1?'Next':"Let's go"}</button></div></div>`,true);
+ <div class="row"><button class="btn ghost grow" id="tutSkip">${i<TUT.length-1?'Skip':''}</button><button class="btn primary grow" id="tutNext">${i<TUT.length-1?'Next':"Let's go"}</button></div></div>`,true,null,false);
  $('#tutNext').onclick=()=>showTutorial(i+1);$('#tutSkip').onclick=()=>showTutorial(TUT.length)}
 // ---------- what to do next ----------
 function nextSteps(){const out=[];
